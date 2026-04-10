@@ -53,7 +53,7 @@ export default function StatsCard({ icon: Icon, label, value, sub, trend, trendU
         {trend && (
           <div className={clsx(
             'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-tighter uppercase', 
-            trendUp ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+            trendUp ? 'bg-[#ea4335]/10 text-[#f28b82] border border-[#ea4335]/20' : 'bg-[#34a853]/10 text-[#81c995] border border-[#34a853]/20'
           )}>
             {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
             {trend}

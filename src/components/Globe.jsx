@@ -44,7 +44,7 @@ export default function Globe({ threats = [] }) {
 
       // Outer glow
       const grd = ctx.createRadialGradient(cx, cy, R * 0.6, cx, cy, R * 1.4);
-      grd.addColorStop(0, 'rgba(99,102,241,0.04)');
+      grd.addColorStop(0, 'rgba(26,115,232,0.04)');
       grd.addColorStop(1, 'transparent');
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, W, H);
@@ -54,14 +54,14 @@ export default function Globe({ threats = [] }) {
       ctx.beginPath();
       ctx.arc(cx, cy, R, 0, Math.PI * 2);
       const shadowGrd = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
-      shadowGrd.addColorStop(0, 'rgba(99,102,241,0.08)');
-      shadowGrd.addColorStop(0.5, 'rgba(10,12,28,0.6)');
-      shadowGrd.addColorStop(1, 'rgba(5,6,14,0.9)');
+      shadowGrd.addColorStop(0, 'rgba(26,115,232,0.08)');
+      shadowGrd.addColorStop(0.5, 'rgba(32,33,36,0.6)');
+      shadowGrd.addColorStop(1, 'rgba(10,12,28,0.9)');
       ctx.fillStyle = shadowGrd;
       ctx.fill();
 
       // Latitude lines
-      ctx.strokeStyle = 'rgba(99,102,241,0.12)';
+      ctx.strokeStyle = 'rgba(138,180,248,0.12)';
       ctx.lineWidth = 0.5;
       for (let lat = -60; lat <= 60; lat += 30) {
         ctx.beginPath();
@@ -91,7 +91,7 @@ export default function Globe({ threats = [] }) {
       // Globe border
       ctx.beginPath();
       ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(99,102,241,0.25)';
+      ctx.strokeStyle = 'rgba(138,180,248,0.25)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -101,8 +101,8 @@ export default function Globe({ threats = [] }) {
         const proj = project(p.x, p.y, p.z);
         if (!proj.visible) return;
 
-        const color = threat.status === 'unauthorized' ? '#f43f5e'
-          : threat.status === 'suspicious' ? '#f59e0b' : '#10b981';
+        const color = threat.status === 'unauthorized' ? '#ea4335'
+          : threat.status === 'suspicious' ? '#fbbc05' : '#34a853';
         const size = threat.status === 'unauthorized' ? 5 : 4;
 
         // Pulse ring
@@ -142,7 +142,7 @@ export default function Globe({ threats = [] }) {
         ctx.beginPath();
         ctx.moveTo(proj1.x, proj1.y);
         ctx.lineTo(proj2.x, proj2.y);
-        ctx.strokeStyle = 'rgba(244,63,94,0.15)';
+        ctx.strokeStyle = 'rgba(234,67,53,0.15)';
         ctx.lineWidth = 0.5;
         ctx.stroke();
       });

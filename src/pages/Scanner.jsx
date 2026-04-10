@@ -126,11 +126,11 @@ export default function Scanner() {
         <div className="flex items-center gap-4">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.key}>
-              <div className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[11px] font-mono font-bold uppercase tracking-widest transition-all duration-500 ${i <= stepIdx ? 'text-white bg-indigo-500/20 border border-indigo-500/40 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'text-white/20'}`}>
-                <s.icon size={14} className={i <= stepIdx ? 'text-indigo-400' : ''} />
+              <div className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[11px] font-mono font-bold uppercase tracking-widest transition-all duration-500 ${i <= stepIdx ? 'text-white bg-[#1a73e8]/20 border border-[#1a73e8]/40 shadow-[0_4px_20px_rgba(26,115,232,0.2)]' : 'text-white/20'}`}>
+                <s.icon size={14} className={i <= stepIdx ? 'text-[#8ab4f8]' : ''} />
                 <span className="hidden md:block">{s.label}</span>
               </div>
-              {i < STEPS.length - 1 && <div className={`flex-1 h-[2px] rounded-full ${i < stepIdx ? 'bg-indigo-500/40' : 'bg-white/[0.05]'}`} />}
+              {i < STEPS.length - 1 && <div className={`flex-1 h-[2px] rounded-full ${i < stepIdx ? 'bg-[#1a73e8]/40' : 'bg-white/[0.05]'}`} />}
             </React.Fragment>
           ))}
         </div>
@@ -145,7 +145,7 @@ export default function Scanner() {
                 <div className="flex gap-2 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit">
                   {[{k:'file',l:'Media Upload'},{k:'url',l:'Deep URL Scan'}, {k:'api',l:'Live Social Crawler'}].map(m => (
                     <button key={m.k} onClick={() => setMode(m.k)}
-                      className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${mode === m.k ? 'bg-indigo-500 text-white shadow-lg' : 'text-white/40 hover:text-white/60'}`}>
+                      className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${mode === m.k ? 'bg-[#1a73e8] text-white shadow-lg' : 'text-white/40 hover:text-white/60'}`}>
                       {m.l}
                     </button>
                   ))}
@@ -153,14 +153,14 @@ export default function Scanner() {
 
                 {mode === 'file' ? (
                   <div {...getRootProps()} className={`aurora-card p-16 text-center cursor-pointer transition-all duration-500 border-2 border-dashed relative group
-                    ${isDragActive ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/[0.08] hover:border-indigo-500/40 hover:bg-white/[0.02]'}`}>
+                    ${isDragActive ? 'border-[#1a73e8] bg-[#1a73e8]/10' : 'border-white/[0.08] hover:border-[#1a73e8]/40 hover:bg-white/[0.02]'}`}>
                     <input {...getInputProps()} />
                     
-                    <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#1a73e8]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
                     <motion.div animate={isDragActive ? { scale: 1.05 } : { scale: 1 }} className="relative z-10">
-                      <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 bg-indigo-500/10 border border-indigo-500/20 shadow-2xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110">
-                        <Upload size={32} className="text-indigo-400" />
+                      <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 bg-[#1a73e8]/10 border border-[#1a73e8]/20 shadow-2xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110">
+                        <Upload size={32} className="text-[#8ab4f8]" />
                       </div>
                       {file ? (
                         <div>
@@ -210,13 +210,13 @@ export default function Scanner() {
 
             {(step === 'fingerprint' || step === 'scan') && (
               <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="aurora-card p-12 text-center space-y-10 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#1a73e8]/5 to-transparent pointer-events-none" />
                 
                 <div className="relative mx-auto w-32 h-32">
-                  <div className="absolute inset-0 rounded-full border-4 border-indigo-500/10" />
-                  <div className="absolute inset-0 rounded-full border-t-4 border-indigo-500 animate-spin" />
-                  <div className="absolute inset-4 rounded-3xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                    <Fingerprint size={40} className="text-indigo-400 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full border-4 border-[#1a73e8]/10" />
+                  <div className="absolute inset-0 rounded-full border-t-4 border-[#1a73e8] animate-spin" />
+                  <div className="absolute inset-4 rounded-3xl bg-[#1a73e8]/10 flex items-center justify-center border border-[#1a73e8]/20">
+                    <Fingerprint size={40} className="text-[#8ab4f8] animate-pulse" />
                   </div>
                 </div>
 
@@ -224,7 +224,7 @@ export default function Scanner() {
                   <h2 className="text-2xl font-bold text-white tracking-tight">
                     {step === 'fingerprint' ? 'CONTENT DNA SYNTHESIS' : 'GLOBAL NETWORK SCAN'}
                   </h2>
-                  <div className="flex items-center justify-center gap-2 text-indigo-400 font-mono text-sm">
+                  <div className="flex items-center justify-center gap-2 text-[#8ab4f8] font-mono text-sm">
                     <Microscope size={14} />
                     <span className="uppercase tracking-[0.2em]">{SCAN_STAGES[stageIdx]?.label}</span>
                   </div>
@@ -235,7 +235,7 @@ export default function Scanner() {
                     <span>Analysis Load</span><span>{progress}%</span>
                   </div>
                   <div className="h-[6px] bg-white/[0.03] rounded-full p-[2px] border border-white/[0.05]">
-                    <motion.div className="h-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-500 to-emerald-400 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                    <motion.div className="h-full rounded-full bg-gradient-to-r from-[#1a73e8] via-[#8ab4f8] to-[#34a853] shadow-[0_2px_15px_rgba(26,115,232,0.4)]"
                       style={{ width: `${progress}%` }} transition={{ duration: 0.5 }} />
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export default function Scanner() {
               <motion.div key="result" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="text-emerald-400" size={24} />
+                    <ShieldCheck className="text-[#34a853]" size={24} />
                     <h2 className="text-xl font-bold text-white">Forensic Evidence Found</h2>
                   </div>
                   <button onClick={reset} className="glass-button text-[10px] py-2 px-4 uppercase font-bold tracking-widest">
@@ -256,25 +256,25 @@ export default function Scanner() {
 
                 <div className="grid gap-4">
                   {results.slice(0, 1).map((r, i) => (
-                    <div key={i} className="aurora-card p-6 border-rose-500/20 bg-rose-500/[0.02] relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 blur-[40px] -mr-16 -mt-16" />
+                    <div key={i} className="aurora-card p-6 border-[#d93025]/20 bg-[#d93025]/[0.02] relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#d93025]/5 blur-[40px] -mr-16 -mt-16" />
                       <div className="flex items-start justify-between relative z-10">
                         <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-rose-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5">
+                          <p className="text-[10px] font-bold text-[#f28b82] uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5">
                             <AlertTriangle size={12} /> High Criticality Threat
                           </p>
                           <h3 className="text-lg font-bold text-white font-mono break-all">{r.url}</h3>
                           <div className="flex flex-wrap gap-4 mt-3">
                             <div className="flex items-center gap-2 text-xs text-white/40">
-                              <Globe size={14} className="text-indigo-400" /> {r.location} · {r.platform}
+                              <Globe size={14} className="text-[#8ab4f8]" /> {r.location} · {r.platform}
                             </div>
                             <div className="flex items-center gap-2 text-xs text-white/40">
-                              <Eye size={14} className="text-indigo-400" /> {r.views.toLocaleString()} Active Viewers
+                              <Eye size={14} className="text-[#8ab4f8]" /> {r.views.toLocaleString()} Active Viewers
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className="text-3xl font-black text-rose-500 font-mono tracking-tighter">{r.similarity}%</span>
+                          <span className="text-3xl font-black text-[#d93025] font-mono tracking-tighter">{r.similarity}%</span>
                           <p className="text-[10px] font-bold text-white/20 uppercase mt-1 tracking-widest">Match Index</p>
                         </div>
                       </div>
@@ -285,46 +285,46 @@ export default function Scanner() {
                 {/* Multimodal Forensic Breakdown */}
                 <div className="aurora-card p-8 space-y-6">
                   <div className="flex items-center gap-3">
-                    <Microscope className="text-indigo-400" size={20} />
+                    <Microscope className="text-[#8ab4f8]" size={20} />
                     <h3 className="text-sm font-bold text-white uppercase tracking-[0.2em]">Gemini Vision Forensic Breakdown</h3>
                   </div>
                   
                   {aiLoading ? (
                     <div className="flex flex-col items-center justify-center py-10 gap-4">
-                      <Loader2 className="animate-spin text-indigo-500" size={32} />
-                      <p className="text-xs font-mono text-indigo-400 animate-pulse uppercase tracking-widest">Consulting Multimodal Neural Engine…</p>
+                      <Loader2 className="animate-spin text-[#1a73e8]" size={32} />
+                      <p className="text-xs font-mono text-[#8ab4f8] animate-pulse uppercase tracking-widest">Consulting Multimodal Neural Engine…</p>
                     </div>
                   ) : (
                     <div className="space-y-6">
                       <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] relative">
-                         <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded bg-indigo-500/20 border border-indigo-500/30 text-[9px] font-black text-indigo-300 uppercase">
+                         <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded bg-[#1a73e8]/20 border border-[#1a73e8]/30 text-[9px] font-black text-[#8ab4f8] uppercase">
                           AI Verified
                          </div>
                          <p className="text-sm text-white/80 leading-relaxed italic">"{aiResult?.reason}"</p>
                       </div>
                       
                       <div className="grid md:grid-cols-2 gap-4">
-                        <div className="aurora-card p-5 bg-indigo-500/5">
-                           <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Visual Forensic Log</p>
+                        <div className="aurora-card p-5 bg-[#1a73e8]/5">
+                           <p className="text-[10px] font-black text-[#8ab4f8] uppercase tracking-widest mb-3">Visual Forensic Log</p>
                            <div className="text-xs text-white/60 whitespace-pre-wrap font-medium leading-relaxed">
                              {forensicReport}
                            </div>
                         </div>
-                        <div className="aurora-card p-5 bg-emerald-500/5">
-                           <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">Recommended Mitigation</p>
-                           <div className="space-y-2">
-                             {aiResult?.recommended_actions?.map((act, i) => (
-                               <div key={i} className="flex items-start gap-2 text-xs text-white/70">
-                                 <CheckCircle size={14} className="text-emerald-500 mt-0.5" />
-                                 {act}
-                               </div>
-                             ))}
-                           </div>
-                           
-                           <button onClick={(e) => { e.target.disabled = true; toast.success('Hash cryptographically anchored to Polygon Blockchain.', {icon:'💎'}); }} className="mt-4 w-full py-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] uppercase tracking-widest font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all">
-                             <DatabaseBackup size={14} /> Anchor Evidence to Blockchain
-                           </button>
-                        </div>
+                         <div className="aurora-card p-5 bg-[#34a853]/5">
+                            <p className="text-[10px] font-black text-[#81c995] uppercase tracking-widest mb-3">Recommended Mitigation</p>
+                            <div className="space-y-2">
+                              {aiResult?.recommended_actions?.map((act, i) => (
+                                <div key={i} className="flex items-start gap-2 text-xs text-white/70">
+                                  <CheckCircle size={14} className="text-[#34a853] mt-0.5" />
+                                  {act}
+                                </div>
+                              ))}
+                            </div>
+                            
+                            <button onClick={(e) => { e.target.disabled = true; toast.success('Hash cryptographically anchored to Polygon Blockchain.', {icon:'💎'}); }} className="mt-4 w-full py-2 flex items-center justify-center gap-2 rounded-lg bg-[#34a853]/10 border border-[#34a853]/20 text-[10px] uppercase tracking-widest font-bold text-[#81c995] hover:bg-[#34a853]/20 transition-all">
+                              <DatabaseBackup size={14} /> Anchor Evidence to Blockchain
+                            </button>
+                         </div>
                       </div>
                     </div>
                   )}
@@ -338,7 +338,7 @@ export default function Scanner() {
           <AIPanel result={aiResult} loading={aiLoading} />
           
           <div className="aurora-card p-6 flex-1 h-fit">
-            <h3 className="text-[10px] font-black text-indigo-400 tracking-[0.3em] uppercase mb-6">System Capabilities</h3>
+            <h3 className="text-[10px] font-black text-[#8ab4f8] tracking-[0.3em] uppercase mb-6">System Capabilities</h3>
             <div className="space-y-6">
               {[
                 { t: 'Vision-AI', d: 'Multimodal analysis of cropped/skewed media frames.', i: Eye },
@@ -348,7 +348,7 @@ export default function Scanner() {
               ].map(item => (
                 <div key={item.t} className="flex gap-4">
                   <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center flex-shrink-0">
-                    <item.i size={18} className="text-indigo-400" />
+                    <item.i size={18} className="text-[#8ab4f8]" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-white mb-1">{item.t}</p>

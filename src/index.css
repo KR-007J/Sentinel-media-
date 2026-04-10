@@ -77,16 +77,24 @@
   }
 
   .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-aurora-muted relative;
+    @apply flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer overflow-hidden;
+    @apply text-[#9aa0a6] hover:text-white hover:bg-[#3c4043]/50;
   }
-  .nav-link:hover {
-    @apply text-aurora-text;
-    background: rgba(255, 255, 255, 0.05);
-  }
+
   .nav-link.active {
+    @apply bg-[#1a73e8]/15 text-[#8ab4f8] border border-[#1a73e8]/30 font-semibold shadow-[0_2px_10px_rgba(26,115,232,0.1)];
+  }
+
+  .icon-state {
+    @apply transition-colors duration-200;
+  }
+
+  .nav-link.active .icon-state {
+    @apply text-[#8ab4f8];
+  }
+
+  .nav-link:not(.active):hover .icon-state {
     @apply text-white;
-    background: rgba(66, 133, 244, 0.15);
-    color: #8ab4f8; /* Muted Google Blue */
   }
 
   .input-field {

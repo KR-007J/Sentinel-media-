@@ -25,7 +25,7 @@ export default function Sidebar() {
     <motion.aside
       animate={{ width: sidebarOpen ? 240 : 72 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="fixed left-0 top-0 h-full z-50 flex flex-col overflow-hidden bg-[#1e1e1e] border-r border-[#3c4043]"
+      className="fixed left-0 top-0 h-full z-50 flex flex-col overflow-hidden bg-[#202124] border-r border-[#3c4043]"
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-[#3c4043]">
@@ -46,29 +46,24 @@ export default function Sidebar() {
           )}
         </AnimatePresence>
       </div>
-# Nav section follows...
       <nav className="flex-1 py-4 px-2 flex flex-col gap-1 overflow-y-auto">
         {NAV.map(({ to, icon: Icon, label, badge }) => (
-          <NavLink key={to} to={to}>
-            {({ isActive }) => (
-              <div className={clsx('nav-link group', isActive && 'active')}>
-                <div className="relative flex-shrink-0">
-                  <Icon size={18} className={clsx('transition-colors', isActive ? 'text-[#8ab4f8]' : 'text-[#9aa0a6] group-hover:text-white')} />
-                </div>
-                <AnimatePresence>
-                  {sidebarOpen && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="truncate">{label}</span>
-                      {badge && (
-                        <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                          {badge}
-                        </span>
-                      )}
-                    </motion.div>
+          <NavLink key={to} to={to} className={({ isActive }) => clsx('nav-link group', isActive && 'active')}>
+            <div className="relative flex-shrink-0">
+              <Icon size={18} className="icon-state" />
+            </div>
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className="truncate">{label}</span>
+                  {badge && (
+                    <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#1a73e8]/20 text-[#8ab4f8] border border-[#1a73e8]/30">
+                      {badge}
+                    </span>
                   )}
-                </AnimatePresence>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </NavLink>
         ))}
       </nav>
@@ -77,12 +72,12 @@ export default function Sidebar() {
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="mx-3 mb-3 p-3 rounded-lg bg-[#34a853]/5 border border-[#34a853]/20">
+            className="mx-3 mb-3 p-3 rounded-lg bg-[#2d2e31] border border-[#3c4043]">
             <div className="flex items-center gap-2 mb-1">
               <div className="live-dot" />
-              <span className="text-[10px] font-black text-[#81c995] uppercase tracking-widest">LIVE TRACKING</span>
+              <span className="text-[10px] font-black text-[#81c995] uppercase tracking-widest">REAL-TIME FEED</span>
             </div>
-            <p className="text-[10px] text-google-gray font-medium">Monitoring 24/7 Asset Integrity</p>
+            <p className="text-[10px] text-[#9aa0a6] font-medium italic">Scanning 4 content streams...</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -93,7 +88,7 @@ export default function Sidebar() {
         <LogOut size={16} />
         <AnimatePresence>
           {sidebarOpen && (
-            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs font-bold whitespace-nowrap">
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs font-bold whitespace-nowrap uppercase tracking-tighter">
               LOG OUT SYSTEM
             </motion.span>
           )}

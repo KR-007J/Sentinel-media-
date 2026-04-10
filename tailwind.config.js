@@ -4,33 +4,33 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Bricolage Grotesque"', 'sans-serif'],
-        body: ['"Plus Jakarta Sans"', 'sans-serif'],
+        display: ['"Inter"', 'sans-serif'],
+        body: ['"Inter"', 'sans-serif'],
         mono: ['"Fira Code"', 'monospace'],
       },
       colors: {
         aurora: {
-          bg:       '#0d0d0d',
-          surface:  '#161616',
-          card:     '#1e1e1e',
-          border:   '#2d2d2d',
-          'border-bright': '#3d3d3d',
-          indigo:   '#4285f4', // Google Blue
-          violet:   '#a142f4', // Google Violet (Cloud)
+          bg:       '#202124',
+          surface:  '#2d2e31',
+          card:     '#2d2e31',
+          border:   '#3c4043',
+          'border-bright': '#5f6368',
+          indigo:   '#1a73e8', // Google Blue
+          violet:   '#a142f4', // Google Violet
           teal:     '#34a853', // Google Green
           amber:    '#fbbc05', // Google Yellow
           rose:     '#ea4335', // Google Red
           emerald:  '#34a853',
           sky:      '#4285f4',
-          text:     '#f1f3f4',
+          text:     '#ffffff',
           muted:    '#9aa0a6',
-          subtle:   '#202124',
+          subtle:   '#3c4043',
         },
         google: {
           blue: '#1a73e8',
           red: '#d93025',
           yellow: '#f9ab00',
-          green: '#1e8e3e',
+          green: '#34a853',
           gray: '#5f6368',
           'dark-bg': '#202124',
           'dark-surface': '#2d2e31',
@@ -38,18 +38,12 @@ export default {
         }
       },
       backgroundImage: {
-        'aurora-mesh': 'radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.10) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(20,184,166,0.08) 0%, transparent 50%)',
-        'card-shine': 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%)',
-        'threat-glow': 'radial-gradient(ellipse at center, rgba(244,63,94,0.15) 0%, transparent 70%)',
-        'safe-glow': 'radial-gradient(ellipse at center, rgba(16,185,129,0.12) 0%, transparent 70%)',
+        'aurora-mesh': 'radial-gradient(ellipse at 20% 50%, rgba(26,115,232,0.05) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(234,67,53,0.05) 0%, transparent 50%)',
+        'card-shine': 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, transparent 50%)',
       },
       boxShadow: {
-        'aurora': '0 0 0 1px rgba(99,102,241,0.15), 0 4px 24px rgba(99,102,241,0.08)',
-        'aurora-lg': '0 0 0 1px rgba(99,102,241,0.2), 0 8px 48px rgba(99,102,241,0.15)',
-        'threat': '0 0 0 1px rgba(244,63,94,0.3), 0 4px 24px rgba(244,63,94,0.15)',
-        'safe': '0 0 0 1px rgba(16,185,129,0.25), 0 4px 16px rgba(16,185,129,0.1)',
-        'glow-indigo': '0 0 30px rgba(99,102,241,0.4)',
-        'glow-teal': '0 0 20px rgba(20,184,166,0.35)',
+        'google-md': '0 1px 3px 0 rgba(0,0,0,0.3), 0 1px 2px 0 rgba(0,0,0,0.15)',
+        'google-lg': '0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -2px rgba(0,0,0,0.25)',
       },
       animation: {
         'fade-up': 'fadeUp 0.6s ease forwards',
@@ -59,8 +53,7 @@ export default {
         'scan': 'scan 2.5s linear infinite',
         'float': 'float 5s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear infinite',
-        'count-up': 'countUp 0.8s ease forwards',
-        'border-flow': 'borderFlow 3s linear infinite',
+        'spin-slow': 'spin 12s linear infinite',
       },
       keyframes: {
         fadeUp: { '0%': { opacity: 0, transform: 'translateY(20px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
@@ -83,10 +76,6 @@ export default {
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
-        },
-        borderFlow: {
-          '0%, 100%': { borderColor: 'rgba(99,102,241,0.3)' },
-          '50%': { borderColor: 'rgba(20,184,166,0.6)' },
         },
       },
     },

@@ -25,44 +25,44 @@ export default function ThreatMap() {
       {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 p-1 aurora-card rounded-xl">
+          <div className="flex items-center gap-1 p-1 bg-[#2d2e31] border border-[#3c4043] rounded-xl">
             {['all','unauthorized','suspicious','safe'].map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all capitalize
-                  ${filter === f ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/25' : 'text-aurora-muted hover:text-aurora-text'}`}>
+                  ${filter === f ? 'bg-[#1a73e8]/20 text-[#8ab4f8] border border-[#1a73e8]/30' : 'text-[#9aa0a6] hover:text-white'}`}>
                 {f}
               </button>
             ))}
           </div>
-          <span className="text-xs font-mono text-aurora-muted">{filtered.length} incidents shown</span>
+          <span className="text-xs font-mono text-[#9aa0a6]">{filtered.length} incidents shown</span>
         </div>
         <div className="flex items-center gap-2 text-xs font-mono">
           <div className="live-dot" />
-          <span className="text-aurora-muted">Live tracking active</span>
+          <span className="text-[#9aa0a6]">Live tracking active</span>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-5">
         {/* Globe — main */}
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
-          className="lg:col-span-3 aurora-card relative overflow-hidden" style={{ height: 520 }}>
+          className="lg:col-span-3 bg-[#202124] border border-[#3c4043] rounded-2xl relative overflow-hidden shadow-2xl" style={{ height: 520 }}>
           <div className="absolute top-4 left-4 z-10 pointer-events-none">
             <div className="flex items-center gap-2 mb-2">
-              <GlobeIcon size={14} className="text-indigo-400" />
-              <span className="text-xs font-mono text-aurora-muted tracking-widest">PROPAGATION MAP</span>
+              <GlobeIcon size={14} className="text-[#8ab4f8]" />
+              <span className="text-xs font-mono text-[#9aa0a6] tracking-widest uppercase">Propagation Map</span>
             </div>
             <div className="flex flex-col gap-1.5">
-              <LegendItem color="bg-rose-400" label={`${unauthorized.length} Unauthorized`} />
-              <LegendItem color="bg-amber-400" label={`${suspicious.length} Suspicious`} />
-              <LegendItem color="bg-emerald-400" label={`${threats.filter(t=>t.status==='safe').length} Safe`} />
+              <LegendItem color="bg-[#d93025]" label={`${unauthorized.length} Unauthorized`} />
+              <LegendItem color="bg-[#f9ab00]" label={`${suspicious.length} Suspicious`} />
+              <LegendItem color="bg-[#34a853]" label={`${threats.filter(t=>t.status==='safe').length} Safe`} />
             </div>
           </div>
           <div className="absolute bottom-4 left-4 right-4 z-10 pointer-events-none">
             <div className="flex gap-2 flex-wrap">
               {filtered.slice(0, 5).map(t => (
                 <div key={t.id} className="text-[10px] font-mono px-2 py-1 rounded-lg backdrop-blur-sm"
-                  style={{ background: 'rgba(7,8,15,0.7)', border: '1px solid rgba(26,31,58,0.6)' }}>
-                  <span className={t.status === 'unauthorized' ? 'text-rose-400' : t.status === 'suspicious' ? 'text-amber-400' : 'text-emerald-400'}>●</span>
+                  style={{ background: 'rgba(32,33,36,0.8)', border: '1px solid rgba(60,64,67,0.6)' }}>
+                  <span className={t.status === 'unauthorized' ? 'text-[#f28b82]' : t.status === 'suspicious' ? 'text-[#fdd663]' : 'text-[#81c995]'}>●</span>
                   {' '}{t.city || t.location}
                 </div>
               ))}
@@ -81,14 +81,14 @@ export default function ThreatMap() {
               {topRegions.map(([region, count], i) => (
                 <div key={region}>
                   <div className="flex justify-between text-xs font-mono mb-1">
-                    <span className="text-aurora-text">{region}</span>
-                    <span className="text-aurora-muted">{count}</span>
+                    <span className="text-white">{region}</span>
+                    <span className="text-[#9aa0a6]">{count}</span>
                   </div>
-                  <div className="h-1.5 bg-aurora-border rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-[#3c4043] rounded-full overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${(count / topRegions[0][1]) * 100}%` }}
                       transition={{ delay: 0.3 + i * 0.1, duration: 0.6 }}
                       className="h-full rounded-full"
-                      style={{ background: `hsl(${240 - i * 20}, 80%, 65%)` }} />
+                      style={{ background: i === 0 ? '#d93025' : i === 1 ? '#f9ab00' : '#1a73e8' }} />
                   </div>
                 </div>
               ))}
@@ -101,13 +101,13 @@ export default function ThreatMap() {
             <p className="section-label mb-3">RECENT INCIDENTS</p>
             <div className="space-y-2">
               {threats.filter(t => t.status !== 'safe').slice(0, 5).map(t => (
-                <div key={t.id} className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-aurora-subtle transition-colors cursor-pointer"
+                <div key={t.id} className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-[#3c4043]/40 transition-colors cursor-pointer"
                   onClick={() => setSelected(t === selected ? null : t)}>
                   <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0
-                    ${t.status === 'unauthorized' ? 'bg-rose-400' : 'bg-amber-400'}`} />
+                    ${t.status === 'unauthorized' ? 'bg-[#ea4335]' : 'bg-[#fbbc05]'}`} />
                   <div className="min-w-0">
-                    <p className="text-xs font-mono text-aurora-text truncate">{t.url}</p>
-                    <p className="text-[11px] text-aurora-muted">{t.location} · {formatDistanceToNow(new Date(t.timestamp), { addSuffix: true })}</p>
+                    <p className="text-xs font-mono text-white truncate">{t.url}</p>
+                    <p className="text-[11px] text-[#9aa0a6]">{t.location} · {formatDistanceToNow(new Date(t.timestamp), { addSuffix: true })}</p>
                   </div>
                 </div>
               ))}
@@ -120,14 +120,14 @@ export default function ThreatMap() {
             <p className="section-label mb-3">MAP SUMMARY</p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'Total Sites', value: threats.length, color: 'text-aurora-text' },
-                { label: 'High Risk', value: threats.filter(t => t.risk === 'high').length, color: 'text-rose-400' },
-                { label: 'Countries', value: new Set(threats.map(t => t.location)).size, color: 'text-indigo-400' },
-                { label: 'Est. Reach', value: `${(threats.reduce((s, t) => s + (t.views || 0), 0) / 1000).toFixed(0)}K`, color: 'text-amber-400' },
+                { label: 'Total Sites', value: threats.length, color: 'text-white' },
+                { label: 'High Risk', value: threats.filter(t => t.risk === 'high').length, color: 'text-[#f28b82]' },
+                { label: 'Countries', value: new Set(threats.map(t => t.location)).size, color: 'text-[#8ab4f8]' },
+                { label: 'Est. Reach', value: `${(threats.reduce((s, t) => s + (t.views || 0), 0) / 1000).toFixed(0)}K`, color: 'text-[#fdd663]' },
               ].map(s => (
-                <div key={s.label} className="p-2.5 rounded-xl bg-aurora-subtle border border-aurora-border text-center">
+                <div key={s.label} className="p-2.5 rounded-xl bg-[#3c4043]/20 border border-[#3c4043] text-center">
                   <p className={`text-base font-display font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-[10px] text-aurora-muted">{s.label}</p>
+                  <p className="text-[10px] text-[#9aa0a6]">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -140,7 +140,7 @@ export default function ThreatMap() {
 
 function LegendItem({ color, label }) {
   return (
-    <div className="flex items-center gap-1.5 text-[11px] font-mono text-aurora-muted bg-aurora-bg/70 backdrop-blur-sm px-2 py-1 rounded-lg w-fit">
+    <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#9aa0a6] bg-[#202124]/70 backdrop-blur-sm px-2 py-1 rounded-lg w-fit border border-[#3c4043]">
       <span className={`w-2 h-2 rounded-full ${color}`} />
       {label}
     </div>
