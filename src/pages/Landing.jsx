@@ -61,7 +61,7 @@ export default function Landing() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <button onClick={() => navigate('/dashboard')}
+            <button onClick={() => navigate('/login')}
               className="group relative px-10 py-5 bg-white text-black font-black text-sm uppercase tracking-widest rounded-2xl overflow-hidden active:scale-95 transition-all">
               <span className="relative z-10 flex items-center gap-2">Enter the Matrix <ArrowRight size={18} /></span>
               <div className="absolute inset-0 bg-indigo-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -161,7 +161,7 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto space-y-10">
           <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter">SECURE YOUR LEGACY</h2>
           <p className="text-white/40 text-xl max-w-xl mx-auto">First place isn't just a rank, it's a standard of excellence. Start your operations today.</p>
-          <button onClick={() => navigate('/dashboard')}
+          <button onClick={() => navigate('/login')}
             className="px-16 py-6 bg-white text-black font-black text-lg uppercase tracking-widest rounded-3xl hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:-translate-y-1 active:scale-95 transition-all">
             Initialize Sentinel-Zero
           </button>

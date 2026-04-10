@@ -57,32 +57,41 @@ export default function Dashboard() {
     toast.success(`Automated DMCA Payload Dispatched to ISP Webhook for ${threat.url}`, { icon: '🚀' });
   };
 
-  // Simulate live incoming threat every 20s
+  // System initialization
+  useEffect(() => {
+    toast.success('Sentinel Intelligence Engine Synchronized', { icon: '🤖' });
+  }, []);
+
+  // Simulate live incoming threat every 15s
   useEffect(() => {
     const iv = setInterval(() => {
+      const isHigh = Math.random() > 0.6;
       const newThreat = {
         id: `live_${Date.now()}`,
-        url: `live-stream-${Math.floor(Math.random() * 999)}.io/clip`,
-        similarity: Math.floor(Math.random() * 40) + 55,
-        watermark: Math.random() > 0.6,
-        location: ['India', 'Pakistan', 'UAE', 'UK'][Math.floor(Math.random() * 4)],
-        city: 'Unknown',
-        lat: 20 + Math.random() * 30,
-        lng: 70 + Math.random() * 40,
-        status: Math.random() > 0.5 ? 'unauthorized' : 'suspicious',
-        confidence: Math.floor(Math.random() * 30) + 65,
-        risk: Math.random() > 0.5 ? 'high' : 'medium',
+        url: `streaming-node-${Math.floor(Math.random() * 9999)}.net/live`,
+        similarity: Math.floor(Math.random() * 45) + 50,
+        watermark: Math.random() > 0.5,
+        location: ['Germany', 'Brazil', 'Japan', 'Canada', 'India'][Math.floor(Math.random() * 5)],
+        city: 'Edge Node',
+        lat: -20 + Math.random() * 60,
+        lng: -100 + Math.random() * 180,
+        status: isHigh ? 'unauthorized' : 'suspicious',
+        confidence: Math.floor(Math.random() * 20) + 75,
+        risk: isHigh ? 'high' : 'medium',
         action: 'flag',
         timestamp: new Date().toISOString(),
-        asset: 'Live Broadcast',
-        platform: 'Unknown Stream',
-        reason: 'Auto-detected by live monitoring agent.',
-        views: Math.floor(Math.random() * 8000) + 500,
-        spread: Math.floor(Math.random() * 5) + 1,
+        asset: 'Premium Sports Content',
+        platform: 'P2P Network',
+        reason: 'Real-time pHash mismatch detected in backbone traffic.',
+        views: Math.floor(Math.random() * 15000) + 1200,
+        spread: Math.floor(Math.random() * 8) + 1,
       };
       addThreat(newThreat);
-      toast(`New threat detected: ${newThreat.url.substring(0, 28)}…`, { icon: '🚨', style: { borderColor: 'rgba(244,63,94,0.4)' } });
-    }, 20000);
+      toast(`System Alert: Unauthorized stream intercepted in ${newThreat.location}`, { 
+        icon: '🛰️', 
+        style: { background: '#07080f', color: '#fff', border: '1px solid rgba(244,63,94,0.3)' } 
+      });
+    }, 15000);
     return () => clearInterval(iv);
   }, []);
 

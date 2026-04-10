@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, ScanLine, Globe, BarChart3,
-  FileText, Settings, ChevronLeft, Shield, Zap,
+  FileText, Settings, ChevronLeft, Shield, Zap, LogOut
 } from 'lucide-react';
 import { useStore } from '../hooks/useStore';
 import clsx from 'clsx';
@@ -18,7 +18,7 @@ const NAV = [
 ];
 
 export default function Sidebar() {
-  const { sidebarOpen, toggleSidebar, threats } = useStore();
+  const { sidebarOpen, toggleSidebar, threats, logout } = useStore();
   const highThreats = threats.filter(t => t.risk === 'high').length;
 
   return (
@@ -95,6 +95,19 @@ export default function Sidebar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Logout button */}
+      <button onClick={logout}
+        className={clsx('mx-3 mb-2 flex items-center gap-3 px-3 py-2.5 rounded-xl border border-transparent text-aurora-muted hover:text-aurora-rose hover:bg-rose-500/5 hover:border-rose-500/20 transition-all overflow-hidden', !sidebarOpen && 'justify-center')}>
+        <LogOut size={16} />
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs font-semibold whitespace-nowrap">
+              Log Out System
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </button>
 
       {/* Collapse button */}
       <button onClick={toggleSidebar}

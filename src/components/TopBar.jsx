@@ -16,7 +16,7 @@ const PAGE_TITLES = {
 
 export default function TopBar() {
   const location = useLocation();
-  const { threats, userRole, toggleRole } = useStore();
+  const { threats, userRole, toggleRole, user } = useStore();
   const [time, setTime] = useState(new Date());
   const [showNotifs, setShowNotifs] = useState(false);
   const page = PAGE_TITLES[location.pathname] || { title: 'Sentinel-Media', sub: '' };
@@ -88,7 +88,7 @@ export default function TopBar() {
         <button onClick={toggleRole} className="flex items-center gap-2 group">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white transition-all group-hover:scale-105"
             style={{ background: userRole === 'senior' ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'linear-gradient(135deg, #64748b, #475569)' }}>
-            {userRole === 'senior' ? 'SP' : 'JA'}
+            {user?.name?.[0] || 'S'}
           </div>
           <div className="hidden md:block text-left mr-2">
             <p className="text-xs font-bold text-aurora-text leading-tight">{userRole === 'senior' ? 'Senior Partner' : 'Junior Analyst'}</p>

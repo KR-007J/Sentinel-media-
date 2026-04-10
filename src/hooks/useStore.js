@@ -12,6 +12,20 @@ export const useStore = create((set, get) => ({
   assets: MOCK_ASSETS,
   addAsset: (a) => set(s => ({ assets: [a, ...s.assets] })),
 
+  // Authentication
+  isAuthenticated: !!localStorage.getItem('sentinel_auth'),
+  user: JSON.parse(localStorage.getItem('sentinel_user') || 'null'),
+  login: (userData) => {
+    localStorage.setItem('sentinel_auth', 'true');
+    localStorage.setItem('sentinel_user', JSON.stringify(userData));
+    set({ isAuthenticated: true, user: userData });
+  },
+  logout: () => {
+    localStorage.removeItem('sentinel_auth');
+    localStorage.removeItem('sentinel_user');
+    set({ isAuthenticated: false, user: null });
+  },
+
   // Scan state
   isScanning: false,
   scanProgress: 0,
