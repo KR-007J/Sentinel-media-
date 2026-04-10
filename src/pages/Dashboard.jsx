@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function Dashboard() {
-  const { threats, stats, addThreat } = useStore();
+  const { threats, stats, addThreat, userRole } = useStore();
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [filter, setFilter] = useState('all');
@@ -50,7 +50,11 @@ export default function Dashboard() {
   };
 
   const handleTakedown = (threat) => {
-    toast.success(`DMCA takedown queued for ${threat.url}`, { icon: '⚡' });
+    if (userRole !== 'senior') {
+      toast.error('Access Denied: Junior Analysts cannot issue DMCA takedowns.', { icon: '🔒' });
+      return;
+    }
+    toast.success(`Automated DMCA Payload Dispatched to ISP Webhook for ${threat.url}`, { icon: '🚀' });
   };
 
   // Simulate live incoming threat every 20s

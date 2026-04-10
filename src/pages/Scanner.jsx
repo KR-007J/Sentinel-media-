@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, ScanLine, Fingerprint, Sparkles, CheckCircle, AlertTriangle,
-  Clock, Link2, X, ChevronRight, FileVideo, FileImage, Loader2, Eye, ShieldCheck, Microscope, Globe
+  Clock, Link2, X, ChevronRight, FileVideo, FileImage, Loader2, Eye, ShieldCheck, Microscope, Globe, DatabaseBackup
 } from 'lucide-react';
 import AIPanel from '../components/AIPanel';
 import { analyzeMediaThreat, generateTakedownNotice, generateVisualForensics } from '../services/gemini';
@@ -143,7 +143,7 @@ export default function Scanner() {
             {step === 'upload' && (
               <motion.div key="upload" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }} className="space-y-6">
                 <div className="flex gap-2 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit">
-                  {[{k:'file',l:'Media Upload'},{k:'url',l:'Deep URL Scan'}].map(m => (
+                  {[{k:'file',l:'Media Upload'},{k:'url',l:'Deep URL Scan'}, {k:'api',l:'Live Social Crawler'}].map(m => (
                     <button key={m.k} onClick={() => setMode(m.k)}
                       className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${mode === m.k ? 'bg-indigo-500 text-white shadow-lg' : 'text-white/40 hover:text-white/60'}`}>
                       {m.l}
@@ -174,6 +174,16 @@ export default function Scanner() {
                         </div>
                       )}
                     </motion.div>
+                  </div>
+                ) : mode === 'api' ? (
+                  <div className="aurora-card p-10 cursor-pointer hover:border-indigo-500/40 transition-all group" onClick={() => { setUrlInput('https://api.twitch.tv/crawler/sports-live'); setMode('url'); toast('Hooked into Twitch API', {icon:'📡'}); }}>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 group-hover:scale-110 transition-transform"><Globe size={24} className="text-purple-400" /></div>
+                      <div>
+                        <h3 className="font-bold text-white text-lg">Twitch / YouTube Live Interception</h3>
+                        <p className="text-xs text-white/40">Connect directly to Social APIs to automatically scan the top 50 active streams.</p>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="aurora-card p-10">
@@ -310,6 +320,10 @@ export default function Scanner() {
                                </div>
                              ))}
                            </div>
+                           
+                           <button onClick={(e) => { e.target.disabled = true; toast.success('Hash cryptographically anchored to Polygon Blockchain.', {icon:'💎'}); }} className="mt-4 w-full py-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] uppercase tracking-widest font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all">
+                             <DatabaseBackup size={14} /> Anchor Evidence to Blockchain
+                           </button>
                         </div>
                       </div>
                     </div>

@@ -31,4 +31,8 @@ export const useStore = create((set, get) => ({
   // Live feed
   liveFeedPaused: false,
   toggleLiveFeed: () => set(s => ({ liveFeedPaused: !s.liveFeedPaused })),
+
+  // User Role (Multi-Tiered Access)
+  userRole: 'senior', // 'junior' | 'senior'
+  toggleRole: () => set(s => ({ userRole: s.userRole === 'senior' ? 'junior' : 'senior' })),
 }));

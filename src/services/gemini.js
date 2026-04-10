@@ -51,8 +51,9 @@ Look for:
 2. Broadcast branding/overlays (score bugs, etc.)
 3. Digital manipulation (compression artifacts, color shifting)
 4. Contextual clues (stadium signs, jersey names)
+5. OCR Extraction: Scan for illicit gambling URLs or hidden overlay text indicating piracy grouping.
 
-Return a detailed forensic report in 3-4 bullet points.`;
+Return a detailed forensic report in 4-5 bullet points including an OCR Text Output layer.`;
 
   try {
     const res = await fetch(GEMINI_URL, {
