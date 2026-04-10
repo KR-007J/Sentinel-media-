@@ -19,12 +19,14 @@ function AnimatedNumber({ value }) {
 
 export default function StatsCard({ icon: Icon, label, value, sub, trend, trendUp, color = 'indigo', delay = 0 }) {
   const colors = {
-    indigo: { bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)', icon: '#a5b4fc', glow: 'rgba(99,102,241,0.15)' },
-    rose:   { bg: 'rgba(244,63,94,0.06)',  border: 'rgba(244,63,94,0.2)',  icon: '#fb7185', glow: 'rgba(244,63,94,0.12)' },
-    emerald:{ bg: 'rgba(16,185,129,0.06)', border: 'rgba(16,185,129,0.2)', icon: '#34d399', glow: 'rgba(16,185,129,0.1)' },
-    amber:  { bg: 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.2)', icon: '#fbbf24', glow: 'rgba(245,158,11,0.1)' },
-    teal:   { bg: 'rgba(20,184,166,0.06)', border: 'rgba(20,184,166,0.2)', icon: '#2dd4bf', glow: 'rgba(20,184,166,0.1)' },
-    violet: { bg: 'rgba(139,92,246,0.07)', border: 'rgba(139,92,246,0.2)', icon: '#c4b5fd', glow: 'rgba(139,92,246,0.12)' },
+    blue:   { bg: 'rgba(26,115,232,0.12)', border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.15)' },
+    red:    { bg: 'rgba(217,48,37,0.12)',  border: 'rgba(217,48,37,0.3)',   icon: '#f28b82', glow: 'rgba(217,48,37,0.12)' },
+    green:  { bg: 'rgba(30,142,62,0.12)',  border: 'rgba(30,142,62,0.3)',   icon: '#81c995', glow: 'rgba(30,142,62,0.1)' },
+    yellow: { bg: 'rgba(249,171,0,0.12)',  border: 'rgba(249,171,0,0.3)',   icon: '#fdd663', glow: 'rgba(249,171,0,0.1)' },
+    indigo: { bg: 'rgba(26,115,232,0.12)', border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.15)' },
+    rose:   { bg: 'rgba(217,48,37,0.12)',  border: 'rgba(217,48,37,0.3)',   icon: '#f28b82', glow: 'rgba(217,48,37,0.12)' },
+    emerald:{ bg: 'rgba(30,142,62,0.12)',  border: 'rgba(30,142,62,0.3)',   icon: '#81c995', glow: 'rgba(30,142,62,0.1)' },
+    amber:  { bg: 'rgba(249,171,0,0.12)',  border: 'rgba(249,171,0,0.3)',   icon: '#fdd663', glow: 'rgba(249,171,0,0.1)' },
   };
   const c = colors[color] || colors.indigo;
 

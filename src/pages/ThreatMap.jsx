@@ -54,7 +54,7 @@ export default function ThreatMap() {
             <div className="flex flex-col gap-1.5">
               <LegendItem color="bg-rose-400" label={`${unauthorized.length} Unauthorized`} />
               <LegendItem color="bg-amber-400" label={`${suspicious.length} Suspicious`} />
-              <LegendItem color="bg-emerald-400" label="${threats.filter(t=>t.status==='safe').length} Safe" />
+              <LegendItem color="bg-emerald-400" label={`${threats.filter(t=>t.status==='safe').length} Safe`} />
             </div>
           </div>
           <div className="absolute bottom-4 left-4 right-4 z-10 pointer-events-none">

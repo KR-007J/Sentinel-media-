@@ -125,7 +125,9 @@ export default function Dashboard() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} style={{ height: 320 }}>
-          <AIPanel result={aiResult} loading={aiLoading} />
+          <div className="h-full flex flex-col gap-4">
+            <AIPanel result={aiResult} loading={aiLoading} />
+          </div>
         </motion.div>
       </div>
 
@@ -147,20 +149,20 @@ export default function Dashboard() {
           <AreaChart data={ANALYTICS_DATA.weekly} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
             <defs>
               <linearGradient id="gThreats" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.25} />
-                <stop offset="100%" stopColor="#f43f5e" stopOpacity={0} />
+                <stop offset="0%" stopColor="#d93025" stopOpacity={0.25} />
+                <stop offset="100%" stopColor="#d93025" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gSafe" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                <stop offset="0%" stopColor="#1e8e3e" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="#1e8e3e" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'Fira Code' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'Fira Code' }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
-            <Area type="monotone" dataKey="threats" stroke="#f43f5e" strokeWidth={1.5} fill="url(#gThreats)" name="Threats" dot={false} />
-            <Area type="monotone" dataKey="suspicious" stroke="#f59e0b" strokeWidth={1.5} fill="none" strokeDasharray="3 3" name="Suspicious" dot={false} />
-            <Area type="monotone" dataKey="safe" stroke="#10b981" strokeWidth={1.5} fill="url(#gSafe)" name="Safe" dot={false} />
+            <Area type="monotone" dataKey="threats" stroke="#d93025" strokeWidth={2} fill="url(#gThreats)" name="Threats" dot={false} />
+            <Area type="monotone" dataKey="suspicious" stroke="#f9ab00" strokeWidth={2} fill="none" strokeDasharray="4 4" name="Suspicious" dot={false} />
+            <Area type="monotone" dataKey="safe" stroke="#1e8e3e" strokeWidth={2} fill="url(#gSafe)" name="Safe" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
       </motion.div>

@@ -1,36 +1,46 @@
 <div align="center">
-  <img src="https://via.placeholder.com/150/000000/FFFFFF/?text=Sentinel-Media" alt="Sentinel-Media Logo" width="150" height="150" />
+  <img src="https://via.placeholder.com/150/4285F4/FFFFFF/?text=Sentinel-Media" alt="Sentinel-Media Logo" width="150" height="150" />
   <h1>🛡️ Sentinel-Media — AI Digital Asset Guardian</h1>
-  <p><strong>An advanced AI-powered sports media protection platform that detects unauthorized redistribution of broadcast content in real-time.</strong></p>
+  <p><strong>Professional-grade AI security platform for digital asset protection. Built with the "Google Developer Console" aesthetic for maximum operational efficiency.</strong></p>
   
   [![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
-  [![Vite](https://img.shields.io/badge/Vite-5-purple.svg)](https://vitejs.dev/)
-  [![Google Gemini](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange.svg)](https://deepmind.google/technologies/gemini/)
-  [![Firebase](https://img.shields.io/badge/Backend-Firebase-yellow.svg)](https://firebase.google.com/)
-  [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-blue.svg)](https://tailwindcss.com/)
+  [![Google Material](https://img.shields.io/badge/Design-Google%20Material-4285F4.svg)](https://m3.material.io/)
+  [![Google Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-4285F4.svg)](https://deepmind.google/technologies/gemini/)
+  [![Firebase](https://img.shields.io/badge/Backend-Firebase-FFCA28.svg)](https://firebase.google.com/)
 </div>
 
 <hr />
 
 ## 📖 Table of Contents
 1. [🌟 Overview](#-overview)
-2. [✨ Core Features](#-core-features)
-3. [🏗️ Architecture & Tech Stack](#️-architecture--tech-stack)
-4. [📁 Project Structure](#-project-structure)
-5. [⚙️ Setup & Installation](#️-setup--installation)
-6. [🔐 API Keys & Configuration](#-api-keys--configuration)
-7. [💻 Detailed Component Breakdown](#-detailed-component-breakdown)
-8. [🚀 Deployment Guide](#-deployment-guide)
-9. [🎬 Demo Walkthrough](#-demo-walkthrough)
-10. [🏆 Unique Differentiators](#-unique-differentiators)
+2. [🎨 Design & Color Psychology](#-design--color-psychology)
+3. [✨ Core Features](#-core-features)
+4. [🏗️ Architecture & Tech Stack](#️-architecture--tech-stack)
+5. [📁 Project Structure](#-project-structure)
+6. [⚙️ Setup & Installation](#️-setup--installation)
+7. [🔐 API Keys & Configuration](#-api-keys--configuration)
+8. [💻 Detailed Component Breakdown](#-detailed-component-breakdown)
+9. [🚀 Deployment Guide](#-deployment-guide)
+10. [🎬 Demo Walkthrough](#-demo-walkthrough)
+11. [🏆 Unique Differentiators](#-unique-differentiators)
 
 <hr />
 
 ## 🌟 Overview
 
-**Sentinel-Media** is a state-of-the-art cyber-security and digital rights management (DRM) solution designed specifically for sports organizations and media broadcasters. Piracy costs the industry billions annually. Traditional watermarking fails against modern evasion techniques like cropping, compression, and visual modifications. 
+**Sentinel-Media** is a state-of-the-art cyber-security solution designed for the "Google Developer" ecosystem. It protects high-value sports and media broadcasts from unauthorized redistribution. By combining **Content DNA Fingerprinting** with **Gemini 1.5 Flash**, the system identifies, analyzes, and responds to piracy in seconds.
 
-Sentinel-Media leaps over these hurdles by utilizing **Content DNA Fingerprinting (pHash + CLIP embeddings)** coupled with **Google Gemini 2.5 Flash's advanced reasoning capabilities**. It not only detects the theft but automatically generates actionable intelligence briefs and DMCA takedown notices, acting as a fully automated security operations center (SOC) for your digital media.
+## 🎨 Design & Color Psychology
+
+The platform utilizes a customized **Google Developer Palette** designed for high-stress security monitoring. Unlike flashy "cyberpunk" themes, this interface focuses on cognitive clarity and technical authority.
+
+| Color | Hex | Psychological Role | Usage in System |
+|-------|-----|-------------------|-----------------|
+| **Google Blue** | `#1a73e8` | **Trust & Reliability** | Primary buttons, active nav, and AI Panel. |
+| **Google Red** | `#d93025` | **Critical Awareness** | High-risk threat alerts and unauthorized flags. |
+| **Google Yellow** | `#f9ab00` | **Caution & Attention** | Suspicious activity and pending reviews. |
+| **Google Green** | `#1e8e3e` | **Safety & Resolution** | System status (Online) and cleared assets. |
+| **Dark Charcoal** | `#202124` | **Focus & Stability** | Background and surface layers to reduce eye strain. |
 
 ## ✨ Core Features
 

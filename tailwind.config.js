@@ -10,21 +10,31 @@ export default {
       },
       colors: {
         aurora: {
-          bg:       '#07080f',
-          surface:  '#0c0e1a',
-          card:     '#0f1120',
-          border:   '#1a1f3a',
-          'border-bright': '#2a3060',
-          indigo:   '#6366f1',
-          violet:   '#8b5cf6',
-          teal:     '#14b8a6',
-          amber:    '#f59e0b',
-          rose:     '#f43f5e',
-          emerald:  '#10b981',
-          sky:      '#38bdf8',
-          text:     '#e2e8f8',
-          muted:    '#64748b',
-          subtle:   '#1e2442',
+          bg:       '#0d0d0d',
+          surface:  '#161616',
+          card:     '#1e1e1e',
+          border:   '#2d2d2d',
+          'border-bright': '#3d3d3d',
+          indigo:   '#4285f4', // Google Blue
+          violet:   '#a142f4', // Google Violet (Cloud)
+          teal:     '#34a853', // Google Green
+          amber:    '#fbbc05', // Google Yellow
+          rose:     '#ea4335', // Google Red
+          emerald:  '#34a853',
+          sky:      '#4285f4',
+          text:     '#f1f3f4',
+          muted:    '#9aa0a6',
+          subtle:   '#202124',
+        },
+        google: {
+          blue: '#1a73e8',
+          red: '#d93025',
+          yellow: '#f9ab00',
+          green: '#1e8e3e',
+          gray: '#5f6368',
+          'dark-bg': '#202124',
+          'dark-surface': '#2d2e31',
+          'dark-border': '#3c4043',
         }
       },
       backgroundImage: {

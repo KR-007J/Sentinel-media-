@@ -12,13 +12,13 @@ export default function ThreatRow({ threat, onAnalyze, onTakedown }) {
   const [loadingDossier, setLoadingDossier] = useState(false);
 
   const statusColors = {
-    unauthorized: { badge: 'status-badge-threat', dot: 'bg-rose-500', label: 'UNAUTHORIZED', glow: 'shadow-[0_0_12px_rgba(244,63,94,0.4)]' },
-    suspicious:   { badge: 'status-badge-warn',   dot: 'bg-amber-500', label: 'SUSPICIOUS',   glow: 'shadow-[0_0_12px_rgba(245,158,11,0.3)]' },
-    safe:         { badge: 'status-badge-safe',   dot: 'bg-emerald-500', label: 'SAFE',       glow: 'shadow-[0_0_12px_rgba(16,185,129,0.3)]' },
+    unauthorized: { badge: 'status-badge-threat', dot: 'bg-[#ea4335]', label: 'UNAUTHORIZED', glow: 'shadow-[0_0_12px_rgba(234,67,53,0.3)]' },
+    suspicious:   { badge: 'status-badge-warn',   dot: 'bg-[#fbbc05]', label: 'SUSPICIOUS',   glow: 'shadow-[0_0_12px_rgba(251,188,5,0.2)]' },
+    safe:         { badge: 'status-badge-safe',   dot: 'bg-[#34a853]', label: 'SAFE',       glow: 'shadow-[0_0_12px_rgba(52,168,83,0.2)]' },
   };
   const sc = statusColors[threat.status] || statusColors.safe;
 
-  const similarityColor = threat.similarity > 85 ? '#fb7185' : threat.similarity > 60 ? '#fbbf24' : '#34d399';
+  const similarityColor = threat.similarity > 85 ? '#f28b82' : threat.similarity > 60 ? '#fdd663' : '#81c995';
 
   const handleGenerateDossier = async (e) => {
     e.stopPropagation();

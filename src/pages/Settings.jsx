@@ -86,25 +86,30 @@ export default function Settings() {
         </div>
       </SettingSection>
 
-      {/* Firebase */}
-      <SettingSection title="Firebase / Firestore" icon={Database} delay={0.05}>
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          {[
-            ['Project ID', 'VITE_FIREBASE_PROJECT_ID', 'my-sentinel-project'],
-            ['Storage Bucket', 'VITE_FIREBASE_STORAGE_BUCKET', 'my-project.appspot.com'],
-            ['Auth Domain', 'VITE_FIREBASE_AUTH_DOMAIN', 'my-project.firebaseapp.com'],
-            ['Messaging Sender', 'VITE_FIREBASE_MESSAGING_SENDER_ID', '123456789'],
-          ].map(([label, envKey, ph]) => (
-            <div key={label}>
-              <label className="text-[11px] font-mono text-aurora-muted mb-1 block">{label}</label>
-              <input className="input-field text-xs font-mono" placeholder={ph} />
-              <p className="text-[10px] text-aurora-muted mt-0.5">{envKey}</p>
+      {/* Chrome Extension */}
+      <SettingSection title="Chrome Extension Delivery" icon={Globe} delay={0.05}>
+        <div className="space-y-4">
+          <p className="text-xs text-aurora-muted leading-relaxed">
+            To share Sentinel-Zero as a Chrome Extension with your teammate:
+          </p>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-3">
+            <div className="flex gap-3">
+              <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] font-bold">1</div>
+              <p className="text-[11px] text-aurora-text">Run <code className="text-indigo-400">npm run build</code> to generate the <code className="text-white">dist</code> folder.</p>
             </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-          <CheckCircle size={13} className="text-emerald-400 flex-shrink-0" />
-          <p className="text-xs text-emerald-300 font-mono">Firestore fallback active — app works without config (local mode)</p>
+            <div className="flex gap-3">
+              <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] font-bold">2</div>
+              <p className="text-[11px] text-aurora-text">Zip the <code className="text-white">dist</code> folder and send it to your friend.</p>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] font-bold">3</div>
+              <p className="text-[11px] text-aurora-text">Ask them to go to <code className="text-indigo-400">chrome://extensions</code>, enable "Developer mode", and click "Load unpacked".</p>
+            </div>
+          </div>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            className="w-full py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-widest text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center justify-center gap-2">
+            <Download size={12} /> Download Extension Bundle (.zip)
+          </motion.button>
         </div>
       </SettingSection>
 
