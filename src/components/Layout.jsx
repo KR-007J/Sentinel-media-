@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useOutlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import ThreeBackground from './ThreeBackground';
@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Layout() {
   const sidebarOpen = useStore(s => s.sidebarOpen);
   const location = useLocation();
+  const element = useOutlet();
 
   return (
     <div className="flex h-screen bg-[#0a0c18] overflow-hidden text-aurora-text">
@@ -38,7 +39,7 @@ export default function Layout() {
               }}
               className="h-full"
             >
-              <Outlet />
+              {element}
             </motion.div>
           </AnimatePresence>
         </main>

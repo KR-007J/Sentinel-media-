@@ -3,6 +3,11 @@ import React, { useEffect, useRef } from 'react';
 export default function Globe({ threats = [] }) {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
+  const threatsRef = useRef(threats);
+
+  useEffect(() => {
+    threatsRef.current = threats;
+  }, [threats]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -91,7 +96,7 @@ export default function Globe({ threats = [] }) {
       ctx.stroke();
 
       // Threat points
-      threats.forEach(threat => {
+      threatsRef.current.forEach(threat => {
         const p = latLngTo3D(threat.lat || 20, threat.lng || 80, R);
         const proj = project(p.x, p.y, p.z);
         if (!proj.visible) return;
@@ -125,7 +130,7 @@ export default function Globe({ threats = [] }) {
       });
 
       // Connection lines between high threats
-      const highThreats = threats.filter(t => t.status === 'unauthorized');
+      const highThreats = threatsRef.current.filter(t => t.status === 'unauthorized');
       highThreats.forEach((t1, i) => {
         if (i >= highThreats.length - 1) return;
         const t2 = highThreats[i + 1];
@@ -148,7 +153,7 @@ export default function Globe({ threats = [] }) {
 
     drawFrame();
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, [threats]);
+  }, []);
 
   return (
     <canvas

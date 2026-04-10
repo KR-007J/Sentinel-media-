@@ -17,7 +17,8 @@ export default defineConfig({
           vendor: ['react', 'react-dom', 'react-router-dom', 'zustand'],
           charts: ['recharts'],
           motion: ['framer-motion'],
-          icons: ['lucide-react']
+          icons: ['lucide-react'],
+          three: ['three', '@react-three/fiber', '@react-three/drei']
         }
       }
     }
