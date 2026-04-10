@@ -5,7 +5,7 @@
   
   [![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
   [![Vite](https://img.shields.io/badge/Vite-5-purple.svg)](https://vitejs.dev/)
-  [![Google Gemini](https://img.shields.io/badge/AI-Gemini%203%20Flash%20Preview-orange.svg)](https://deepmind.google/technologies/gemini/)
+  [![Google Gemini](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange.svg)](https://deepmind.google/technologies/gemini/)
   [![Firebase](https://img.shields.io/badge/Backend-Firebase-yellow.svg)](https://firebase.google.com/)
   [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-blue.svg)](https://tailwindcss.com/)
 </div>
@@ -30,7 +30,7 @@
 
 **Sentinel-Media** is a state-of-the-art cyber-security and digital rights management (DRM) solution designed specifically for sports organizations and media broadcasters. Piracy costs the industry billions annually. Traditional watermarking fails against modern evasion techniques like cropping, compression, and visual modifications. 
 
-Sentinel-Media leaps over these hurdles by utilizing **Content DNA Fingerprinting (pHash + CLIP embeddings)** coupled with **Google Gemini 3 Flash Preview's advanced reasoning capabilities**. It not only detects the theft but automatically generates actionable intelligence briefs and DMCA takedown notices, acting as a fully automated security operations center (SOC) for your digital media.
+Sentinel-Media leaps over these hurdles by utilizing **Content DNA Fingerprinting (pHash + CLIP embeddings)** coupled with **Google Gemini 2.5 Flash's advanced reasoning capabilities**. It not only detects the theft but automatically generates actionable intelligence briefs and DMCA takedown notices, acting as a fully automated security operations center (SOC) for your digital media.
 
 ## ✨ Core Features
 
@@ -63,7 +63,7 @@ The application is built on a modern, highly responsive **Single Page Applicatio
 * **Recharts**: Composable charting library to render beautiful analytical data.
 
 ### AI & Backend Services
-* **Google Gemini 3 Flash Preview**: Acts as the cognitive engine for risk assessment, DMCA drafting, and threat analysis logic.
+* **Google Gemini 2.5 Flash**: Acts as the cognitive engine for risk assessment, DMCA drafting, and threat analysis logic.
 * **Firebase (Firestore & Storage)**: Provides secure, real-time NoSQL cloud database syncing and media storage capabilities.
 
 ---
