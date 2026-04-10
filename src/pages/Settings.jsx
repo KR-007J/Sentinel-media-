@@ -134,24 +134,7 @@ export default function Settings() {
         <Toggle label="Slack webhook integration" desc="Post threat alerts to your Slack channel" defaultOn={false} />
       </SettingSection>
 
-      {/* Deploy info */}
-      <SettingSection title="Deployment" icon={Globe} delay={0.2}>
-        <div className="space-y-3">
-          {[
-            { platform: 'Vercel', cmd: 'vercel deploy', note: 'Set env vars in Vercel dashboard → Project → Settings → Environment Variables' },
-            { platform: 'Render', cmd: 'render deploy', note: 'Add VITE_* env vars in Render dashboard → Service → Environment' },
-            { platform: 'Firebase Hosting', cmd: 'firebase deploy', note: 'Run `firebase init hosting` then `npm run build && firebase deploy`' },
-          ].map(d => (
-            <div key={d.platform} className="p-3.5 rounded-xl border border-aurora-border bg-aurora-surface">
-              <div className="flex items-center justify-between mb-1.5">
-                <p className="text-sm font-semibold text-aurora-text">{d.platform}</p>
-                <code className="text-xs font-mono px-2 py-0.5 rounded-lg bg-aurora-subtle text-indigo-300">{d.cmd}</code>
-              </div>
-              <p className="text-xs text-aurora-muted">{d.note}</p>
-            </div>
-          ))}
-        </div>
-      </SettingSection>
+
 
       <button onClick={save} className="btn-primary flex items-center gap-2">
         {saved ? <><CheckCircle size={16} /> Saved!</> : <><Save size={16} /> Save Settings</>}
