@@ -39,7 +39,6 @@ export default function Scanner() {
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [forensicReport, setForensicReport] = useState('');
-  const [showTakedown, setShowTakedown] = useState(false);
 
   const fileToBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -53,7 +52,7 @@ export default function Scanner() {
       setFile(files[0]); 
       toast.success('Asset loaded successfully', {
         icon: '📁',
-        style: { background: '#1e293b', color: '#fff', border: '1px solid #334155' }
+        style: { background: '#202124', color: '#fff', border: '1px solid #3c4043' }
       }); 
     }
   }, []);
@@ -72,7 +71,6 @@ export default function Scanner() {
       try { b64 = await fileToBase64(file); } catch (e) { console.error(e); }
     }
 
-    // Progress simulation
     let elapsed = 0;
     const total = SCAN_STAGES.reduce((s, st) => s + st.duration, 0);
     for (let i = 0; i < SCAN_STAGES.length; i++) {
@@ -83,10 +81,9 @@ export default function Scanner() {
       if (i === 1) setStep('scan');
     }
 
-    // Generate mock detections
     const mockDetections = [
-      { url: 'pirate-stream.xyz/live-cricket', similarity: 94, watermark: false, location: 'India', city: 'Mumbai', lat: 19.07, lng: 72.87, platform: 'Piracy Site', status: 'unauthorized', confidence: 94, risk: 'high', action: 'flag', timestamp: new Date().toISOString(), asset: file?.name || 'Uploaded Asset', views: 28400, spread: 12, reason: '' },
-      { url: 'telegram.me/sports_leaks_global', similarity: 78, watermark: false, location: 'UAE', city: 'Dubai', lat: 25.2, lng: 55.27, platform: 'Telegram', status: 'suspicious', confidence: 78, risk: 'medium', action: 'review', timestamp: new Date().toISOString(), asset: file?.name || 'Uploaded Asset', views: 8200, spread: 3, reason: '' },
+      { id: `scan_${Date.now()}_det1`, url: 'pirate-stream.xyz/live-cricket', similarity: 94, watermark: false, location: 'India', city: 'Mumbai', lat: 19.07, lng: 72.87, platform: 'Piracy Site', status: 'unauthorized', confidence: 94, risk: 'high', action: 'flag', timestamp: new Date().toISOString(), asset: file?.name || 'Uploaded Asset', views: 28400, spread: 12, reason: '' },
+      { id: `scan_${Date.now()}_det2`, url: 'telegram.me/sports_leaks_global', similarity: 78, watermark: false, location: 'UAE', city: 'Dubai', lat: 25.2, lng: 55.27, platform: 'Telegram', status: 'suspicious', confidence: 78, risk: 'medium', action: 'review', timestamp: new Date().toISOString(), asset: file?.name || 'Uploaded Asset', views: 8200, spread: 3, reason: '' },
     ];
 
     setAiLoading(true);
@@ -94,12 +91,10 @@ export default function Scanner() {
     setResults(mockDetections);
     
     try {
-      // Parallel AI Analysis
       const [aiRes, forensics] = await Promise.all([
         analyzeMediaThreat(mockDetections[0]),
         file ? generateVisualForensics({ type: file.type, base64: b64 }) : Promise.resolve('URL analysis completed.')
       ]);
-      
       mockDetections[0].reason = aiRes.reason;
       setAiResult(aiRes);
       setForensicReport(forensics);
@@ -107,7 +102,7 @@ export default function Scanner() {
       console.error(err);
     } finally {
       setAiLoading(false);
-      mockDetections.forEach(t => addThreat({ id: `scan_${Date.now()}_${Math.random()}`, ...t }));
+      mockDetections.forEach(t => addThreat(t));
       toast.success(`Scan complete — Critical threat detected`, { icon: '🚨' });
     }
   };
@@ -120,211 +115,187 @@ export default function Scanner() {
   const stepIdx = STEPS.findIndex(s => s.key === step);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Stepper */}
-      <div className="aurora-card p-5">
-        <div className="flex items-center gap-4">
+    <div className="space-y-8 pb-12">
+      <div className="bg-[#2d2e31] border border-[#3c4043] p-6 rounded-3xl shadow-xl">
+        <div className="flex items-center gap-6">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.key}>
-              <div className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[11px] font-mono font-bold uppercase tracking-widest transition-all duration-500 ${i <= stepIdx ? 'text-white bg-[#1a73e8]/20 border border-[#1a73e8]/40 shadow-[0_4px_20px_rgba(26,115,232,0.2)]' : 'text-white/20'}`}>
-                <s.icon size={14} className={i <= stepIdx ? 'text-[#8ab4f8]' : ''} />
-                <span className="hidden md:block">{s.label}</span>
+              <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-700
+                ${i <= stepIdx ? 'text-white bg-[#1a73e8] shadow-2xl shadow-[#1a73e8]/30 scale-105' : 'text-[#5f6368] bg-[#202124] border border-[#3c4043]/30'}`}>
+                <s.icon size={18} />
+                <span className="hidden lg:block">{s.label}</span>
               </div>
-              {i < STEPS.length - 1 && <div className={`flex-1 h-[2px] rounded-full ${i < stepIdx ? 'bg-[#1a73e8]/40' : 'bg-white/[0.05]'}`} />}
+              {i < STEPS.length - 1 && <div className={`flex-1 h-[2px] rounded-full ${i < stepIdx ? 'bg-[#1a73e8]' : 'bg-[#3c4043]'}`} />}
             </React.Fragment>
           ))}
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 space-y-6">
-
+      <div className="grid lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-8 space-y-8">
           <AnimatePresence mode="wait">
             {step === 'upload' && (
-              <motion.div key="upload" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }} className="space-y-6">
-                <div className="flex gap-2 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit">
-                  {[{k:'file',l:'Media Upload'},{k:'url',l:'Deep URL Scan'}, {k:'api',l:'Live Social Crawler'}].map(m => (
+              <motion.div key="upload" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
+                <div className="flex gap-2 p-2 bg-[#202124] border border-[#3c4043] rounded-2xl w-fit shadow-inner">
+                  {[{k:'file',l:'Media Payload'},{k:'url',l:'Deep URL Scan'}, {k:'api',l:'Live Intelligence'}].map(m => (
                     <button key={m.k} onClick={() => setMode(m.k)}
-                      className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${mode === m.k ? 'bg-[#1a73e8] text-white shadow-lg' : 'text-white/40 hover:text-white/60'}`}>
+                      className={`px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === m.k ? 'bg-[#1a73e8] text-white shadow-xl' : 'text-[#5f6368] hover:text-white'}`}>
                       {m.l}
                     </button>
                   ))}
                 </div>
 
                 {mode === 'file' ? (
-                  <div {...getRootProps()} className={`aurora-card p-16 text-center cursor-pointer transition-all duration-500 border-2 border-dashed relative group
-                    ${isDragActive ? 'border-[#1a73e8] bg-[#1a73e8]/10' : 'border-white/[0.08] hover:border-[#1a73e8]/40 hover:bg-white/[0.02]'}`}>
+                  <div {...getRootProps()} className={`bg-[#2d2e31] border-2 border-dashed p-24 text-center cursor-pointer transition-all duration-700 rounded-[3rem] relative group
+                    ${isDragActive ? 'border-[#1a73e8] bg-[#1a73e8]/5 scale-95' : 'border-[#3c4043] hover:border-[#1a73e8]/60 hover:bg-[#1a73e8]/5'}`}>
                     <input {...getInputProps()} />
-                    
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#1a73e8]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    <motion.div animate={isDragActive ? { scale: 1.05 } : { scale: 1 }} className="relative z-10">
-                      <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 bg-[#1a73e8]/10 border border-[#1a73e8]/20 shadow-2xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110">
-                        <Upload size={32} className="text-[#8ab4f8]" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-[#1a73e8]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <motion.div animate={isDragActive ? { scale: 1.1 } : { scale: 1 }} className="relative z-10">
+                      <div className="w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 bg-[#202124] border border-[#3c4043] shadow-2xl group-hover:rotate-12 transition-transform">
+                        <Upload size={36} className="text-[#8ab4f8]" />
                       </div>
                       {file ? (
                         <div>
-                          <p className="text-xl font-bold text-white mb-2">{file.name}</p>
-                          <p className="text-sm font-mono text-indigo-400">{(file.size / 1024 / 1024).toFixed(1)} MB · READY FOR INGESTION</p>
+                          <p className="text-2xl font-bold text-white mb-3 tracking-tight">{file.name}</p>
+                          <p className="text-[11px] font-bold text-[#8ab4f8] uppercase tracking-[0.3em]">{(file.size / 1024 / 1024).toFixed(1)} MB · READ READY</p>
                         </div>
                       ) : (
                         <div>
-                          <p className="text-xl font-bold text-white mb-2">Initialize Digital Ingest</p>
-                          <p className="text-sm text-white/40 max-w-xs mx-auto">Drag & drop your broadcast master or match clip for forensic fingerprinting</p>
+                          <p className="text-2xl font-bold text-white mb-3 tracking-tight">Digital Multi-modal Ingest</p>
+                          <p className="text-xs text-[#5f6368] font-bold uppercase tracking-widest max-w-xs mx-auto">Upload media package for deep-packet fingerprinting</p>
                         </div>
                       )}
                     </motion.div>
                   </div>
-                ) : mode === 'api' ? (
-                  <div className="aurora-card p-10 cursor-pointer hover:border-indigo-500/40 transition-all group" onClick={() => { setUrlInput('https://api.twitch.tv/crawler/sports-live'); setMode('url'); toast('Hooked into Twitch API', {icon:'📡'}); }}>
-                    <div className="flex items-center gap-4 mb-3">
-                      <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 group-hover:scale-110 transition-transform"><Globe size={24} className="text-purple-400" /></div>
-                      <div>
-                        <h3 className="font-bold text-white text-lg">Twitch / YouTube Live Interception</h3>
-                        <p className="text-xs text-white/40">Connect directly to Social APIs to automatically scan the top 50 active streams.</p>
-                      </div>
-                    </div>
-                  </div>
                 ) : (
-                  <div className="aurora-card p-10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                        <Link2 size={18} className="text-indigo-400" />
-                      </div>
+                  <div className="bg-[#2d2e31] border border-[#3c4043] p-12 rounded-[2.5rem] shadow-2xl">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="p-4 rounded-2xl bg-[#1a73e8]/10 border border-[#1a73e8]/20 shadow-lg"><Link2 size={24} className="text-[#8ab4f8]" /></div>
                       <div>
-                        <h3 className="font-bold text-white">Target Stream Analysis</h3>
-                        <p className="text-xs text-white/40">Provide a direct MP4, HLS, or DASH endpoint</p>
+                        <h3 className="font-bold text-white text-xl tracking-tight">Active Stream Interception</h3>
+                        <p className="text-[10px] text-[#5f6368] font-black uppercase tracking-widest mt-1">Provide RTMP, HLS, or CDN endpoint</p>
                       </div>
                     </div>
-                    <input className="input-field" placeholder="https://cdn.stream-provider.io/live/master.m3u8"
+                    <input className="w-full bg-[#202124] border border-[#3c4043] rounded-2xl p-5 text-white font-mono text-sm outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8]/30 transition-all placeholder:text-[#5f6368]" 
+                      placeholder="https://origin-cdn.stream-service.net/v1/master.m3u8"
                       value={urlInput} onChange={e => setUrlInput(e.target.value)} />
                   </div>
                 )}
 
                 <button onClick={runScan} disabled={!file && !urlInput}
-                  className="btn-primary w-full flex items-center justify-center gap-3 py-5 text-base font-bold tracking-[0.1em] uppercase shadow-2xl disabled:opacity-20">
-                  <ScanLine size={20} /> Start Forensic Scan
+                  className="w-full flex items-center justify-center gap-4 py-6 rounded-[2rem] bg-[#1a73e8] text-white text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-[#1a73e8]/40 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-10 disabled:grayscale">
+                  <ScanLine size={24} /> Initiating Intelligence Scan
                 </button>
               </motion.div>
             )}
 
             {(step === 'fingerprint' || step === 'scan') && (
-              <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="aurora-card p-12 text-center space-y-10 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-[#1a73e8]/5 to-transparent pointer-events-none" />
-                
-                <div className="relative mx-auto w-32 h-32">
-                  <div className="absolute inset-0 rounded-full border-4 border-[#1a73e8]/10" />
-                  <div className="absolute inset-0 rounded-full border-t-4 border-[#1a73e8] animate-spin" />
-                  <div className="absolute inset-4 rounded-3xl bg-[#1a73e8]/10 flex items-center justify-center border border-[#1a73e8]/20">
-                    <Fingerprint size={40} className="text-[#8ab4f8] animate-pulse" />
+              <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#2d2e31] border border-[#3c4043] p-24 rounded-[3.5rem] text-center space-y-12 relative overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#1a73e8]/10 to-transparent pointer-events-none" />
+                <div className="relative mx-auto w-40 h-40">
+                  <div className="absolute inset-0 rounded-full border-8 border-[#3c4043]/40" />
+                  <div className="absolute inset-0 rounded-full border-t-8 border-[#1a73e8] animate-[spin_2s_linear_infinite]" />
+                  <div className="absolute inset-6 rounded-[2.5rem] bg-[#202124] flex items-center justify-center border border-[#3c4043] shadow-inner">
+                    <Fingerprint size={48} className="text-[#8ab4f8] animate-pulse" />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold text-white tracking-tight">
-                    {step === 'fingerprint' ? 'CONTENT DNA SYNTHESIS' : 'GLOBAL NETWORK SCAN'}
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-bold text-white tracking-widest uppercase">
+                    {step === 'fingerprint' ? 'Decoding DNA' : 'Global Vector Query'}
                   </h2>
-                  <div className="flex items-center justify-center gap-2 text-[#8ab4f8] font-mono text-sm">
-                    <Microscope size={14} />
-                    <span className="uppercase tracking-[0.2em]">{SCAN_STAGES[stageIdx]?.label}</span>
+                  <div className="flex items-center justify-center gap-3 text-[#5f6368] font-black uppercase text-[10px] tracking-[0.3em]">
+                    <div className="w-2 h-2 rounded-full bg-[#1a73e8] animate-ping" />
+                    <span>{SCAN_STAGES[stageIdx]?.label}</span>
                   </div>
                 </div>
-
-                <div className="w-full max-w-md mx-auto space-y-3">
-                  <div className="flex justify-between text-[10px] font-black font-mono text-white/30 uppercase tracking-[0.3em]">
+                <div className="w-full max-w-sm mx-auto space-y-4">
+                  <div className="flex justify-between text-[9px] font-black text-[#5f6368] uppercase tracking-[0.5em]">
                     <span>Analysis Load</span><span>{progress}%</span>
                   </div>
-                  <div className="h-[6px] bg-white/[0.03] rounded-full p-[2px] border border-white/[0.05]">
-                    <motion.div className="h-full rounded-full bg-gradient-to-r from-[#1a73e8] via-[#8ab4f8] to-[#34a853] shadow-[0_2px_15px_rgba(26,115,232,0.4)]"
-                      style={{ width: `${progress}%` }} transition={{ duration: 0.5 }} />
+                  <div className="h-2 bg-[#202124] rounded-full p-1 border border-[#3c4043] shadow-inner overflow-hidden">
+                    <motion.div className="h-full rounded-full bg-gradient-to-r from-[#1a73e8] via-[#8ab4f8] to-[#1a73e8] shadow-[0_0_20px_rgba(26,115,232,0.6)]"
+                      style={{ width: `${progress}%` }} />
                   </div>
                 </div>
               </motion.div>
             )}
 
             {step === 'result' && (
-              <motion.div key="result" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+              <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="text-[#34a853]" size={24} />
-                    <h2 className="text-xl font-bold text-white">Forensic Evidence Found</h2>
-                  </div>
-                  <button onClick={reset} className="glass-button text-[10px] py-2 px-4 uppercase font-bold tracking-widest">
-                    <X size={12} /> Clear System
+                   <div>
+                     <p className="text-[10px] font-black text-[#8ab4f8] uppercase tracking-widest mb-1">Intelligence Report</p>
+                     <h2 className="text-2xl font-bold text-white tracking-tight">Forensic Findings: 1 Significant Instance</h2>
+                   </div>
+                  <button onClick={reset} className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[#3c4043] text-[#f28b82] hover:bg-[#ea4335]/10 font-black text-[10px] uppercase tracking-widest transition-all shadow-md">
+                    <X size={14} /> Purge Ingest
                   </button>
                 </div>
 
-                <div className="grid gap-4">
-                  {results.slice(0, 1).map((r, i) => (
-                    <div key={i} className="aurora-card p-6 border-[#d93025]/20 bg-[#d93025]/[0.02] relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#d93025]/5 blur-[40px] -mr-16 -mt-16" />
-                      <div className="flex items-start justify-between relative z-10">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-[#f28b82] uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5">
-                            <AlertTriangle size={12} /> High Criticality Threat
-                          </p>
-                          <h3 className="text-lg font-bold text-white font-mono break-all">{r.url}</h3>
-                          <div className="flex flex-wrap gap-4 mt-3">
-                            <div className="flex items-center gap-2 text-xs text-white/40">
-                              <Globe size={14} className="text-[#8ab4f8]" /> {r.location} · {r.platform}
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-white/40">
-                              <Eye size={14} className="text-[#8ab4f8]" /> {r.views.toLocaleString()} Active Viewers
-                            </div>
-                          </div>
+                <div className="bg-[#2d2e31] border border-[#ea4335]/30 p-8 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#ea4335]/10 blur-[80px] -mr-32 -mt-32 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex items-start justify-between relative z-10">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-[#ea4335]/10 border border-[#ea4335]/20 text-[#f28b82] text-[10px] font-black uppercase tracking-widest w-fit">
+                        <AlertTriangle size={14} /> High-Criticality Interception
+                      </div>
+                      <h3 className="text-2xl font-bold text-white break-all tracking-tight leading-none">{results[0].url}</h3>
+                      <div className="flex items-center gap-6 mt-4">
+                        <div className="flex items-center gap-2.5 text-[10px] font-black text-[#5f6368] uppercase tracking-widest">
+                           <Globe size={18} className="text-[#8ab4f8]" /> {results[0].location} · {results[0].platform}
                         </div>
-                        <div className="text-right">
-                          <span className="text-3xl font-black text-[#d93025] font-mono tracking-tighter">{r.similarity}%</span>
-                          <p className="text-[10px] font-bold text-white/20 uppercase mt-1 tracking-widest">Match Index</p>
+                        <div className="flex items-center gap-2.5 text-[10px] font-black text-[#5f6368] uppercase tracking-widest">
+                           <Eye size={18} className="text-[#8ab4f8]" /> {results[0].views.toLocaleString()} Viewers
                         </div>
                       </div>
                     </div>
-                  ))}
+                    <div className="text-right">
+                       <span className="text-6xl font-black text-[#ea4335] tracking-tighter block">{results[0].similarity}%</span>
+                       <p className="text-[10px] font-black text-[#5f6368] uppercase tracking-[0.3em] mt-2">Vector Match Index</p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Multimodal Forensic Breakdown */}
-                <div className="aurora-card p-8 space-y-6">
-                  <div className="flex items-center gap-3">
-                    <Microscope className="text-[#8ab4f8]" size={20} />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-[0.2em]">Gemini Vision Forensic Breakdown</h3>
+                <div className="bg-[#2d2e31] border border-[#3c4043] p-10 rounded-[3rem] shadow-2xl space-y-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#1a73e8]/10 border border-[#1a73e8]/20 shadow-lg"><Microscope className="text-[#8ab4f8]" size={24} /></div>
+                    <h3 className="text-lg font-bold text-white uppercase tracking-widest">Multimodal Forensic Ledger</h3>
                   </div>
-                  
+
                   {aiLoading ? (
-                    <div className="flex flex-col items-center justify-center py-10 gap-4">
-                      <Loader2 className="animate-spin text-[#1a73e8]" size={32} />
-                      <p className="text-xs font-mono text-[#8ab4f8] animate-pulse uppercase tracking-widest">Consulting Multimodal Neural Engine…</p>
+                    <div className="flex flex-col items-center justify-center py-16 gap-5">
+                      <Loader2 className="animate-spin text-[#1a73e8]" size={48} />
+                      <p className="text-xs font-black text-[#5f6368] uppercase tracking-[0.4em] animate-pulse">Engaging Neural Reasoning Layer…</p>
                     </div>
                   ) : (
-                    <div className="space-y-6">
-                      <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] relative">
-                         <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded bg-[#1a73e8]/20 border border-[#1a73e8]/30 text-[9px] font-black text-[#8ab4f8] uppercase">
-                          AI Verified
+                    <div className="space-y-8">
+                      <div className="p-8 rounded-[2.5rem] bg-[#202124] border border-[#3c4043] relative shadow-inner">
+                         <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a73e8]/20 border border-[#1a73e8]/30 text-[9px] font-black text-[#8ab4f8] uppercase tracking-widest shadow-lg">
+                           GEMINI AUTHENTICATED
                          </div>
-                         <p className="text-sm text-white/80 leading-relaxed italic">"{aiResult?.reason}"</p>
+                         <p className="text-base text-[#9aa0a6] leading-relaxed italic font-medium px-4">"{aiResult?.reason}"</p>
                       </div>
-                      
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="aurora-card p-5 bg-[#1a73e8]/5">
-                           <p className="text-[10px] font-black text-[#8ab4f8] uppercase tracking-widest mb-3">Visual Forensic Log</p>
-                           <div className="text-xs text-white/60 whitespace-pre-wrap font-medium leading-relaxed">
-                             {forensicReport}
-                           </div>
+
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-[#202124] border border-[#3c4043] p-8 rounded-[2.5rem] shadow-xl">
+                           <p className="text-[10px] font-black text-[#5f6368] uppercase tracking-[0.2em] mb-6">Internal Visual Log</p>
+                           <p className="text-[13px] text-white/80 leading-relaxed font-medium whitespace-pre-wrap">{forensicReport}</p>
                         </div>
-                         <div className="aurora-card p-5 bg-[#34a853]/5">
-                            <p className="text-[10px] font-black text-[#81c995] uppercase tracking-widest mb-3">Recommended Mitigation</p>
-                            <div className="space-y-2">
-                              {aiResult?.recommended_actions?.map((act, i) => (
-                                <div key={i} className="flex items-start gap-2 text-xs text-white/70">
-                                  <CheckCircle size={14} className="text-[#34a853] mt-0.5" />
-                                  {act}
-                                </div>
-                              ))}
-                            </div>
-                            
-                            <button onClick={(e) => { e.target.disabled = true; toast.success('Hash cryptographically anchored to Polygon Blockchain.', {icon:'💎'}); }} className="mt-4 w-full py-2 flex items-center justify-center gap-2 rounded-lg bg-[#34a853]/10 border border-[#34a853]/20 text-[10px] uppercase tracking-widest font-bold text-[#81c995] hover:bg-[#34a853]/20 transition-all">
-                              <DatabaseBackup size={14} /> Anchor Evidence to Blockchain
+                        <div className="bg-[#202124] border border-[#3c4043] p-8 rounded-[2.5rem] shadow-xl">
+                            <p className="text-[10px] font-black text-[#1a73e8] uppercase tracking-[0.2em] mb-6">Strategic Mitigation Route</p>
+                            <nav className="space-y-4">
+                               {aiResult?.recommended_actions?.map((act, i) => (
+                                 <div key={i} className="flex items-start gap-3 text-xs text-white/70 font-bold bg-[#2d2e31]/40 p-3 rounded-2xl border border-white/5">
+                                   <div className="w-1.5 h-1.5 rounded-full bg-[#1a73e8] mt-1.5 flex-shrink-0" />
+                                   {act}
+                                 </div>
+                               ))}
+                            </nav>
+                            <button onClick={(e) => { e.target.disabled = true; toast.success('Hash cryptographically anchored to Polygon.', {icon:'💎'}); }} 
+                              className="mt-8 w-full py-4 rounded-2xl bg-[#1a73e8]/10 border border-[#1a73e8]/20 text-[10px] font-black uppercase tracking-widest text-[#8ab4f8] hover:bg-[#1a73e8] hover:text-white transition-all shadow-lg active:scale-95">
+                              <DatabaseBackup size={18} className="inline mr-2" /> Cryptographic Evidence Anchor
                             </button>
-                         </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -334,30 +305,29 @@ export default function Scanner() {
           </AnimatePresence>
         </div>
 
-        <div className="lg:col-span-4 space-y-6 flex flex-col">
-          <AIPanel result={aiResult} loading={aiLoading} />
-          
-          <div className="aurora-card p-6 flex-1 h-fit">
-            <h3 className="text-[10px] font-black text-[#8ab4f8] tracking-[0.3em] uppercase mb-6">System Capabilities</h3>
-            <div className="space-y-6">
-              {[
-                { t: 'Vision-AI', d: 'Multimodal analysis of cropped/skewed media frames.', i: Eye },
-                { t: 'DNA Match', d: 'Content fingerprinting resilient to color/res manipulation.', i: Fingerprint },
-                { t: 'Global Sync', d: 'Real-time monitoring across 140+ countries.', i: Globe },
-                { t: 'Legal Ready', d: 'Instant generation of courtroom-ready evidence logs.', i: ShieldCheck },
-              ].map(item => (
-                <div key={item.t} className="flex gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center flex-shrink-0">
-                    <item.i size={18} className="text-[#8ab4f8]" />
+        <div className="lg:col-span-4 flex flex-col gap-8">
+           <AIPanel result={aiResult} loading={aiLoading} />
+           <div className="bg-[#2d2e31] border border-[#3c4043] p-8 rounded-[2.5rem] shadow-2xl">
+              <p className="text-[10px] font-black text-[#5f6368] tracking-[0.4em] uppercase mb-8">Node Capabilities</p>
+              <div className="space-y-8">
+                {[
+                  { t: 'Neural Vision', d: 'Extracts deep semantic meaning from skewed media frames.', i: Microscope },
+                  { t: 'Vector Auth', d: 'Content-aware fingerprinting resilient to color/rot.', i: Fingerprint },
+                  { t: 'Global Mesh', d: 'Distributed intercept nodes across 142 data centers.', i: Globe },
+                  { t: 'Secure Chain', d: 'Blockchain-backed immutable evidence custody logs.', i: ShieldCheck },
+                ].map(item => (
+                  <div key={item.t} className="flex gap-5 group cursor-default">
+                    <div className="w-14 h-14 rounded-2xl bg-[#202124] border border-[#3c4043] flex items-center justify-center flex-shrink-0 group-hover:bg-[#1a73e8]/10 group-hover:border-[#1a73e8]/30 transition-all shadow-inner">
+                      <item.i size={24} className="text-[#8ab4f8] group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white mb-1.5 uppercase tracking-tight">{item.t}</p>
+                      <p className="text-[11px] text-[#5f6368] font-bold leading-relaxed">{item.d}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-white mb-1">{item.t}</p>
-                    <p className="text-[11px] text-white/40 leading-relaxed font-medium">{item.d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+           </div>
         </div>
       </div>
     </div>

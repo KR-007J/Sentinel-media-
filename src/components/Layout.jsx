@@ -9,26 +9,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Layout() {
   const sidebarOpen = useStore(s => s.sidebarOpen);
   const location = useLocation();
-  const element = useOutlet();
 
   return (
-    <div className="flex h-screen bg-[#0a0c18] overflow-hidden text-aurora-text">
-      {/* 3D Animated Background */}
+    <div className="flex h-screen bg-[#202124] overflow-hidden text-white font-body selection:bg-[#1a73e8]/30">
+      {/* 3D Animated Background - Static layer behind */}
       <ThreeBackground />
       
-      {/* Subtle overlay to ensure readability */}
-      <div className="fixed inset-0 bg-gradient-to-tr from-[#0a0c18] via-transparent to-[#0a0c18]/20 pointer-events-none z-[1]" />
+      {/* Subtle institutional overlay - ensures high-fidelity text contrast */}
+      <div className="fixed inset-0 bg-[#202124]/40 backdrop-blur-[2px] pointer-events-none z-[1]" />
 
-      <Sidebar />
+      {/* Main Container - Using Flex row instead of fixed sidebar for perfect interactivity */}
+      <div className="flex flex-1 w-full relative z-[10]">
+        <Sidebar />
 
-      <div
-        className="flex flex-col flex-1 min-w-0 transition-all duration-500 ease-in-out relative z-10"
-        style={{ marginLeft: sidebarOpen ? '240px' : '72px' }}
-      >
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6 scrollbar-hide">
-          <Outlet />
-        </main>
+        <div className="flex flex-col flex-1 min-w-0 h-full relative">
+          <TopBar />
+          <main className="flex-1 overflow-y-auto p-8 custom-scrollbar relative z-[20]">
+             <div className="max-w-[1600px] mx-auto w-full">
+                <Outlet />
+             </div>
+          </main>
+        </div>
       </div>
     </div>
   );

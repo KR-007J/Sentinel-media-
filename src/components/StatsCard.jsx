@@ -21,54 +21,53 @@ export default function StatsCard({ icon: Icon, label, value, sub, trend, trendU
   const colors = {
     blue:   { bg: 'rgba(26,115,232,0.12)', border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.15)' },
     red:    { bg: 'rgba(217,48,37,0.12)',  border: 'rgba(217,48,37,0.3)',   icon: '#f28b82', glow: 'rgba(217,48,37,0.12)' },
-    green:  { bg: 'rgba(30,142,62,0.12)',  border: 'rgba(30,142,62,0.3)',   icon: '#81c995', glow: 'rgba(30,142,62,0.1)' },
+    green:  { bg: 'rgba(26,115,232,0.12)',  border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.1)' }, // Redirected to Blue
     yellow: { bg: 'rgba(249,171,0,0.12)',  border: 'rgba(249,171,0,0.3)',   icon: '#fdd663', glow: 'rgba(249,171,0,0.1)' },
     indigo: { bg: 'rgba(26,115,232,0.12)', border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.15)' },
     rose:   { bg: 'rgba(217,48,37,0.12)',  border: 'rgba(217,48,37,0.3)',   icon: '#f28b82', glow: 'rgba(217,48,37,0.12)' },
-    emerald:{ bg: 'rgba(30,142,62,0.12)',  border: 'rgba(30,142,62,0.3)',   icon: '#81c995', glow: 'rgba(30,142,62,0.1)' },
+    emerald:{ bg: 'rgba(26,115,232,0.12)',  border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.1)' }, // Redirected to Blue
     amber:  { bg: 'rgba(249,171,0,0.12)',  border: 'rgba(249,171,0,0.3)',   icon: '#fdd663', glow: 'rgba(249,171,0,0.1)' },
   };
   const c = colors[color] || colors.indigo;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="aurora-card p-6 flex flex-col gap-5 group relative overflow-hidden"
+      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="bg-[#2d2e31] border border-[#3c4043] p-8 rounded-[2rem] flex flex-col gap-6 group relative overflow-hidden shadow-xl"
     >
       {/* Background glow effect */}
       <div 
-        className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+        className="absolute -right-4 -top-4 w-32 h-32 rounded-full blur-[50px] opacity-0 group-hover:opacity-10 transition-opacity duration-700"
         style={{ background: c.icon }}
       />
       
       <div className="flex items-start justify-between relative z-10">
         <div 
-          className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
-          style={{ background: c.bg, border: `1px solid ${c.border}`, boxShadow: `0 8px 16px -4px ${c.glow}` }}
+          className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:rotate-6 bg-[#202124] border border-[#3c4043] shadow-inner"
         >
-          <Icon size={20} style={{ color: c.icon }} />
+          <Icon size={24} style={{ color: c.icon }} />
         </div>
         {trend && (
           <div className={clsx(
-            'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-tighter uppercase', 
-            trendUp ? 'bg-[#ea4335]/10 text-[#f28b82] border border-[#ea4335]/20' : 'bg-[#34a853]/10 text-[#81c995] border border-[#34a853]/20'
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black font-mono tracking-widest uppercase border', 
+            trendUp ? 'bg-[#ea4335]/10 text-[#f28b82] border-[#ea4335]/20' : 'bg-[#1a73e8]/10 text-[#8ab4f8] border-[#1a73e8]/20'
           )}>
-            {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             {trend}
           </div>
         )}
       </div>
 
       <div className="relative z-10">
-        <h3 className="text-3xl font-display font-bold text-white tracking-tight">
+        <h3 className="text-4xl font-bold text-white tracking-tighter">
           {typeof value === 'number' || !isNaN(parseInt(value)) ? <AnimatedNumber value={value} /> : value}
         </h3>
-        <p className="text-xs font-mono font-bold text-aurora-muted mt-2 tracking-widest uppercase opacity-60">
+        <p className="text-[11px] font-black text-[#5f6368] mt-3 tracking-[0.2em] uppercase">
           {label}
         </p>
-        {sub && <p className="text-[10px] text-aurora-muted mt-1 font-medium opacity-40">{sub}</p>}
+        {sub && <p className="text-[10px] text-[#5f6368] mt-1.5 font-bold italic opacity-60">{sub}</p>}
       </div>
     </motion.div>
   );

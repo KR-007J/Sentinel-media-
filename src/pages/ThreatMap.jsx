@@ -21,49 +21,50 @@ export default function ThreatMap() {
   const topRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   return (
-    <div className="space-y-5">
-      {/* Controls */}
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 p-1 bg-[#2d2e31] border border-[#3c4043] rounded-xl">
+        <div>
+           <p className="text-[10px] font-black text-[#8ab4f8] tracking-widest uppercase mb-1">Geospatial Distribution Overview</p>
+           <h2 className="text-2xl font-bold text-white tracking-tight">Threat Propagation Map</h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 p-1 bg-[#202124] border border-[#3c4043] rounded-2xl shadow-inner">
             {['all','unauthorized','suspicious','safe'].map(f => (
               <button key={f} onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all capitalize
-                  ${filter === f ? 'bg-[#1a73e8]/20 text-[#8ab4f8] border border-[#1a73e8]/30' : 'text-[#9aa0a6] hover:text-white'}`}>
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                  ${filter === f ? 'bg-[#1a73e8] text-white shadow-lg' : 'text-[#5f6368] hover:text-white'}`}>
                 {f}
               </button>
             ))}
           </div>
-          <span className="text-xs font-mono text-[#9aa0a6]">{filtered.length} incidents shown</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs font-mono">
-          <div className="live-dot" />
-          <span className="text-[#9aa0a6]">Live tracking active</span>
+          <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-[#2d2e31] border border-[#3c4043] text-[10px] font-black text-[#5f6368] uppercase tracking-widest">
+            <div className="live-dot" />
+            <span>Telemetry Stream: Active</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-5">
-        {/* Globe — main */}
-        <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
-          className="lg:col-span-3 bg-[#202124] border border-[#3c4043] rounded-2xl relative overflow-hidden shadow-2xl" style={{ height: 520 }}>
-          <div className="absolute top-4 left-4 z-10 pointer-events-none">
-            <div className="flex items-center gap-2 mb-2">
+      <div className="grid lg:grid-cols-4 gap-6">
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+          className="lg:col-span-3 bg-[#202124] border border-[#3c4043] rounded-[2.5rem] relative overflow-hidden shadow-2xl" style={{ height: 600 }}>
+          <div className="absolute top-8 left-8 z-10 pointer-events-none">
+            <div className="flex items-center gap-2 mb-4 bg-[#2d2e31]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#3c4043]">
               <GlobeIcon size={14} className="text-[#8ab4f8]" />
-              <span className="text-xs font-mono text-[#9aa0a6] tracking-widest uppercase">Propagation Map</span>
+              <span className="text-[10px] font-black text-white tracking-widest uppercase">Global Surveillance Node</span>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <LegendItem color="bg-[#d93025]" label={`${unauthorized.length} Unauthorized`} />
-              <LegendItem color="bg-[#f9ab00]" label={`${suspicious.length} Suspicious`} />
-              <LegendItem color="bg-[#34a853]" label={`${threats.filter(t=>t.status==='safe').length} Safe`} />
+            <div className="flex flex-col gap-2">
+              <LegendItem color="bg-[#ea4335]" label={`${unauthorized.length} High Risk Interceptions`} />
+              <LegendItem color="bg-[#fbbc05]" label={`${suspicious.length} Suspicious Signals`} />
+              <LegendItem color="bg-[#1a73e8]" label={`${threats.filter(t=>t.status==='safe').length} Verified Assets`} />
             </div>
           </div>
-          <div className="absolute bottom-4 left-4 right-4 z-10 pointer-events-none">
+          
+          <div className="absolute bottom-8 left-8 right-8 z-10 pointer-events-none">
             <div className="flex gap-2 flex-wrap">
-              {filtered.slice(0, 5).map(t => (
-                <div key={t.id} className="text-[10px] font-mono px-2 py-1 rounded-lg backdrop-blur-sm"
-                  style={{ background: 'rgba(32,33,36,0.8)', border: '1px solid rgba(60,64,67,0.6)' }}>
-                  <span className={t.status === 'unauthorized' ? 'text-[#f28b82]' : t.status === 'suspicious' ? 'text-[#fdd663]' : 'text-[#81c995]'}>●</span>
-                  {' '}{t.city || t.location}
+              {filtered.slice(0, 8).map(t => (
+                <div key={t.id} className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full backdrop-blur-xl border border-white/5 bg-black/40 text-white flex items-center gap-2">
+                  <span className={t.status === 'unauthorized' ? 'text-[#ea4335]' : t.status === 'suspicious' ? 'text-[#fbbc05]' : 'text-[#1a73e8]'}>●</span>
+                  {t.city || t.location}
                 </div>
               ))}
             </div>
@@ -71,63 +72,40 @@ export default function ThreatMap() {
           <Globe threats={filtered} />
         </motion.div>
 
-        {/* Sidebar info */}
-        <div className="space-y-4">
-          {/* Top regions */}
-          <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-            className="aurora-card p-4">
-            <p className="section-label mb-3">TOP THREAT REGIONS</p>
-            <div className="space-y-2.5">
+        <div className="space-y-6">
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
+            className="bg-[#2d2e31] border border-[#3c4043] p-6 rounded-[2rem] shadow-xl">
+            <p className="text-[10px] font-black text-[#5f6368] tracking-widest uppercase mb-4">Regional Criticality</p>
+            <div className="space-y-5">
               {topRegions.map(([region, count], i) => (
                 <div key={region}>
-                  <div className="flex justify-between text-xs font-mono mb-1">
+                  <div className="flex justify-between text-[11px] font-black mb-2 uppercase tracking-tight">
                     <span className="text-white">{region}</span>
-                    <span className="text-[#9aa0a6]">{count}</span>
+                    <span className="text-[#8ab4f8]">{count}</span>
                   </div>
-                  <div className="h-1.5 bg-[#3c4043] rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-[#202124] rounded-full overflow-hidden shadow-inner">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${(count / topRegions[0][1]) * 100}%` }}
-                      transition={{ delay: 0.3 + i * 0.1, duration: 0.6 }}
-                      className="h-full rounded-full"
-                      style={{ background: i === 0 ? '#d93025' : i === 1 ? '#f9ab00' : '#1a73e8' }} />
+                      transition={{ delay: 0.3 + i * 0.1, duration: 0.8 }}
+                      className="h-full rounded-full shadow-lg"
+                      style={{ background: i === 0 ? '#ea4335' : i === 1 ? '#fbbc05' : '#1a73e8' }} />
                   </div>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          {/* Recent incidents */}
-          <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-            className="aurora-card p-4">
-            <p className="section-label mb-3">RECENT INCIDENTS</p>
-            <div className="space-y-2">
-              {threats.filter(t => t.status !== 'safe').slice(0, 5).map(t => (
-                <div key={t.id} className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-[#3c4043]/40 transition-colors cursor-pointer"
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
+            className="bg-[#2d2e31] border border-[#3c4043] p-6 rounded-[2rem] shadow-xl flex-1 overflow-hidden">
+            <p className="text-[10px] font-black text-[#5f6368] tracking-widest uppercase mb-4">Signal Logs</p>
+            <div className="space-y-2 overflow-y-auto custom-scrollbar" style={{ maxHeight: '300px' }}>
+              {threats.filter(t => t.status !== 'safe').slice(0, 10).map(t => (
+                <div key={t.id} className="flex items-start gap-4 p-3 rounded-2xl hover:bg-[#3c4043] transition-all cursor-pointer border border-transparent hover:border-[#5f6368]/30 group"
                   onClick={() => setSelected(t === selected ? null : t)}>
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0
-                    ${t.status === 'unauthorized' ? 'bg-[#ea4335]' : 'bg-[#fbbc05]'}`} />
+                  <div className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 shadow-lg ${t.status === 'unauthorized' ? 'bg-[#ea4335] shadow-[#ea4335]/20' : 'bg-[#fbbc05] shadow-[#fbbc05]/20'}`} />
                   <div className="min-w-0">
-                    <p className="text-xs font-mono text-white truncate">{t.url}</p>
-                    <p className="text-[11px] text-[#9aa0a6]">{t.location} · {formatDistanceToNow(new Date(t.timestamp), { addSuffix: true })}</p>
+                    <p className="text-xs font-black text-white truncate group-hover:text-[#8ab4f8] transition-colors">{t.url}</p>
+                    <p className="text-[10px] text-[#5f6368] font-bold uppercase tracking-tight mt-1">{t.location} · {formatDistanceToNow(new Date(t.timestamp))} ago</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Stats summary */}
-          <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
-            className="aurora-card p-4">
-            <p className="section-label mb-3">MAP SUMMARY</p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: 'Total Sites', value: threats.length, color: 'text-white' },
-                { label: 'High Risk', value: threats.filter(t => t.risk === 'high').length, color: 'text-[#f28b82]' },
-                { label: 'Countries', value: new Set(threats.map(t => t.location)).size, color: 'text-[#8ab4f8]' },
-                { label: 'Est. Reach', value: `${(threats.reduce((s, t) => s + (t.views || 0), 0) / 1000).toFixed(0)}K`, color: 'text-[#fdd663]' },
-              ].map(s => (
-                <div key={s.label} className="p-2.5 rounded-xl bg-[#3c4043]/20 border border-[#3c4043] text-center">
-                  <p className={`text-base font-display font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-[10px] text-[#9aa0a6]">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -140,8 +118,8 @@ export default function ThreatMap() {
 
 function LegendItem({ color, label }) {
   return (
-    <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#9aa0a6] bg-[#202124]/70 backdrop-blur-sm px-2 py-1 rounded-lg w-fit border border-[#3c4043]">
-      <span className={`w-2 h-2 rounded-full ${color}`} />
+    <div className="flex items-center gap-2.5 text-[10px] font-black text-white bg-[#202124]/80 backdrop-blur-md px-4 py-2 rounded-2xl w-fit border border-[#3c4043] shadow-lg uppercase tracking-widest">
+      <span className={`w-2.5 h-2.5 rounded-full ${color} shadow-lg`} />
       {label}
     </div>
   );

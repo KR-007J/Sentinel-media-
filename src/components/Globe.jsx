@@ -13,10 +13,16 @@ export default function Globe({ threats = [] }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const W = canvas.offsetWidth;
-    const H = canvas.offsetHeight;
-    canvas.width = W;
-    canvas.height = H;
+    
+    // Scale for high DPI
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const W = rect.width;
+    const H = rect.height;
     const cx = W / 2, cy = H / 2;
     const R = Math.min(W, H) * 0.38;
     let rot = 0;
@@ -34,38 +40,38 @@ export default function Globe({ threats = [] }) {
 
     // Project 3D to 2D
     function project(x, y, z) {
-      const fov = 600;
+      const fov = 800;
       const scale = fov / (fov + z);
-      return { x: cx + x * scale, y: cy - y * scale, z, visible: z > -R * 0.5 };
+      return { x: cx + x * scale, y: cy - y * scale, z, visible: z > -R * 0.6 };
     }
 
     function drawFrame() {
       ctx.clearRect(0, 0, W, H);
 
-      // Outer glow
-      const grd = ctx.createRadialGradient(cx, cy, R * 0.6, cx, cy, R * 1.4);
-      grd.addColorStop(0, 'rgba(26,115,232,0.04)');
+      // Institutional Atmoshear
+      const grd = ctx.createRadialGradient(cx, cy, R * 0.5, cx, cy, R * 1.6);
+      grd.addColorStop(0, 'rgba(26,115,232,0.06)');
       grd.addColorStop(1, 'transparent');
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, W, H);
 
-      // Globe shadow
+      // Internal Core Shadow
       ctx.save();
       ctx.beginPath();
       ctx.arc(cx, cy, R, 0, Math.PI * 2);
       const shadowGrd = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
-      shadowGrd.addColorStop(0, 'rgba(26,115,232,0.08)');
-      shadowGrd.addColorStop(0.5, 'rgba(32,33,36,0.6)');
-      shadowGrd.addColorStop(1, 'rgba(10,12,28,0.9)');
+      shadowGrd.addColorStop(0, 'rgba(26,115,232,0.12)');
+      shadowGrd.addColorStop(0.6, 'rgba(32,33,36,0.8)');
+      shadowGrd.addColorStop(1, 'rgba(10,12,28,1)');
       ctx.fillStyle = shadowGrd;
       ctx.fill();
 
-      // Latitude lines
-      ctx.strokeStyle = 'rgba(138,180,248,0.12)';
+      // Latitude Parallels
+      ctx.strokeStyle = 'rgba(138,180,248,0.15)';
       ctx.lineWidth = 0.5;
-      for (let lat = -60; lat <= 60; lat += 30) {
+      for (let lat = -60; lat <= 60; lat += 20) {
         ctx.beginPath();
-        for (let lng = -180; lng <= 180; lng += 3) {
+        for (let lng = -180; lng <= 180; lng += 4) {
           const p = latLngTo3D(lat, lng, R);
           const proj = project(p.x, p.y, p.z);
           if (!proj.visible) continue;
@@ -75,10 +81,10 @@ export default function Globe({ threats = [] }) {
         ctx.stroke();
       }
 
-      // Longitude lines
+      // Longitude Meridians
       for (let lng = 0; lng < 360; lng += 30) {
         ctx.beginPath();
-        for (let lat = -90; lat <= 90; lat += 3) {
+        for (let lat = -90; lat <= 90; lat += 5) {
           const p = latLngTo3D(lat, lng, R);
           const proj = project(p.x, p.y, p.z);
           if (!proj.visible) continue;
@@ -88,48 +94,49 @@ export default function Globe({ threats = [] }) {
         ctx.stroke();
       }
 
-      // Globe border
+      // Atmospheric Rim
       ctx.beginPath();
       ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(138,180,248,0.25)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(138,180,248,0.3)';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Threat points
+      // Data Points (Threat Metrics)
       threatsRef.current.forEach(threat => {
         const p = latLngTo3D(threat.lat || 20, threat.lng || 80, R);
         const proj = project(p.x, p.y, p.z);
         if (!proj.visible) return;
 
+        // Color mapping based on institutional threat level (Blue = Neutral/Verified, Red = High Risk)
         const color = threat.status === 'unauthorized' ? '#ea4335'
-          : threat.status === 'suspicious' ? '#fbbc05' : '#34a853';
-        const size = threat.status === 'unauthorized' ? 5 : 4;
+          : threat.status === 'suspicious' ? '#fbbc05' : '#1a73e8';
+        const size = threat.status === 'unauthorized' ? 6 : 4;
 
-        // Pulse ring
+        // Neural Pulse
         const pulseScale = 1 + (Math.sin(Date.now() * 0.003 + threat.lat) * 0.5 + 0.5) * 1.5;
         ctx.beginPath();
         ctx.arc(proj.x, proj.y, size * pulseScale, 0, Math.PI * 2);
-        ctx.strokeStyle = color + '40';
+        ctx.strokeStyle = color + '33';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Dot
+        // Core Interaction Node
         ctx.beginPath();
         ctx.arc(proj.x, proj.y, size, 0, Math.PI * 2);
-        ctx.fillStyle = color + 'cc';
+        ctx.fillStyle = color + 'dd';
         ctx.fill();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 0.5;
         ctx.stroke();
 
-        // Inner bright dot
+        // High Frequency Reflection
         ctx.beginPath();
-        ctx.arc(proj.x, proj.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#fff';
+        ctx.arc(proj.x - size*0.2, proj.y - size*0.2, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.fill();
       });
 
-      // Connection lines between high threats
+      // Inter-node Propagation Lattice
       const highThreats = threatsRef.current.filter(t => t.status === 'unauthorized');
       highThreats.forEach((t1, i) => {
         if (i >= highThreats.length - 1) return;
@@ -139,15 +146,21 @@ export default function Globe({ threats = [] }) {
         const proj1 = project(p1.x, p1.y, p1.z);
         const proj2 = project(p2.x, p2.y, p2.z);
         if (!proj1.visible || !proj2.visible) return;
+        
         ctx.beginPath();
         ctx.moveTo(proj1.x, proj1.y);
         ctx.lineTo(proj2.x, proj2.y);
-        ctx.strokeStyle = 'rgba(234,67,53,0.15)';
-        ctx.lineWidth = 0.5;
+        const lineGrd = ctx.createLinearGradient(proj1.x, proj1.y, proj2.x, proj2.y);
+        lineGrd.addColorStop(0, 'rgba(234,67,53,0.3)');
+        lineGrd.addColorStop(1, 'rgba(234,67,53,0.05)');
+        ctx.strokeStyle = lineGrd;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
         ctx.stroke();
+        ctx.setLineDash([]);
       });
 
-      rot += 0.08;
+      rot += 0.06;
       animRef.current = requestAnimationFrame(drawFrame);
     }
 
