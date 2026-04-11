@@ -1,9 +1,9 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, ScanLine, Globe, BarChart3,
-  FileText, Settings, ChevronLeft, Shield, Zap, LogOut
+  FileText, Settings, ChevronLeft, Shield, LogOut
 } from 'lucide-react';
 import { useStore } from '../hooks/useStore';
 import clsx from 'clsx';
@@ -24,102 +24,127 @@ export default function Sidebar() {
   return (
     <motion.aside
       animate={{ width: sidebarOpen ? 260 : 80 }}
-      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-      className="h-full flex flex-col flex-shrink-0 bg-[#2d2e31] border-r border-[#3c4043] relative z-[50]"
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      className="h-full flex flex-col flex-shrink-0 bg-black/40 backdrop-blur-2xl border-r border-white/10 relative z-[50]"
     >
-      {/* Institutional Brand Header */}
-      <div className="flex items-center gap-3 px-5 py-6 border-b border-[#3c4043]">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 relative bg-[#1a73e8] shadow-lg shadow-[#1a73e8]/20">
-          <Shield size={20} className="text-white" />
+      {/* HUD Header */}
+      <div className="flex items-center gap-3 px-5 py-6 border-b border-white/10">
+        <div className="w-10 h-10 rounded-sm flex items-center justify-center flex-shrink-0 relative bg-primary/10 border border-primary/30 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+          <Shield size={20} className="text-primary" />
           {highThreats > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-4.5 rounded-full bg-[#ea4335] flex items-center justify-center text-[10px] font-black text-white border-2 border-[#2d2e31] px-1">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-4.5 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-white border-2 border-black px-1">
               {highThreats}
             </span>
           )}
         </div>
         <AnimatePresence>
           {sidebarOpen && (
-            <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-              <h2 className="font-bold text-white text-xl tracking-tight leading-none">SENTINEL</h2>
-              <p className="text-[10px] text-[#8ab4f8] font-black tracking-[0.2em] mt-1.5 uppercase leading-none">Zero intelligence</p>
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="overflow-hidden">
+              <h2 className="font-bold text-white text-lg tracking-wider leading-none font-tech uppercase">SENTINEL</h2>
+              <p className="telemetry-label text-primary mt-1">NEXUS OPERATING SYSTEM</p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Primary Registry Navigation */}
-      <nav className="flex-1 py-6 px-3 flex flex-col gap-1.5 overflow-y-auto custom-scrollbar">
+      {/* Registry Navigation */}
+      <nav className="flex-1 py-6 px-3 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
         {NAV.map(({ to, icon: Icon, label, badge }) => (
           <NavLink 
             key={to} 
             to={to} 
             className={({ isActive }) => clsx(
-              'flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative group overflow-hidden',
-              isActive ? 'bg-[#1a73e8] text-white shadow-xl shadow-[#1a73e8]/20 active-nav-glow' : 'text-[#9aa0a6] hover:text-white hover:bg-[#3c4043]'
+              'flex items-center gap-4 px-4 py-3.5 rounded-sm transition-all duration-300 relative group overflow-hidden border',
+              isActive 
+                ? 'bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(0,243,255,0.1)]' 
+                : 'border-transparent text-text-secondary hover:text-white hover:bg-white/5'
             )}
           >
-            <div className="relative flex-shrink-0 z-10">
-              <Icon size={20} className="transition-transform duration-300 group-hover:scale-110" />
+            <div className="relative flex-shrink-0 z-10 transition-transform duration-300 group-hover:scale-110">
+              <Icon size={20} className={clsx("transition-all", badge && "animate-pulse")} />
             </div>
             <AnimatePresence>
               {sidebarOpen && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2 flex-1 min-w-0 z-10">
-                  <span className="text-[13px] font-bold tracking-tight truncate">{label}</span>
+                  <span className="text-xs font-semibold tracking-widest uppercase">{label}</span>
                   {badge && (
-                    <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded border border-white/20 bg-white/10 uppercase">
+                    <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded-sm border border-primary/40 bg-primary/20 text-primary">
                       {badge}
                     </span>
                   )}
                 </motion.div>
               )}
             </AnimatePresence>
-            {/* Hover subtle glow layer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            
+            {/* Active Glow Bar */}
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.div 
+                   layoutId="activeNav"
+                   className="absolute left-0 w-1 h-2/3 bg-primary rounded-r-full" 
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                />
+              )}
+            </AnimatePresence>
           </NavLink>
         ))}
       </nav>
 
-      {/* Intelligence Hearth - Replaced Green with Blue/Neutral Institutional Status */}
+      {/* System Status HUD */}
       <AnimatePresence>
         {sidebarOpen && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}
-            className="mx-4 mb-4 p-4 rounded-3xl bg-[#202124] border border-[#3c4043] shadow-inner">
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
-              <span className="text-[10px] font-black text-[#8ab4f8] uppercase tracking-widest leading-none">Intelligence Hub</span>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            className="mx-3 mb-4 p-4 glass-card border-primary/20"
+          >
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="pulse-indicator" />
+              <span className="telemetry-label text-primary">System Integrity</span>
             </div>
-            <p className="text-[10px] text-[#5f6368] font-bold uppercase tracking-tighter leading-relaxed">
-              Global Interception: <span className="text-[#9aa0a6]">[ACTIVE]</span>
-            </p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-[9px] uppercase tracking-tighter">
+                <span className="opacity-50 font-mono">Core Efficiency</span>
+                <span className="text-primary font-mono">98.4%</span>
+              </div>
+              <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '98.4%' }}
+                  transition={{ duration: 1.5, delay: 0.5 }}
+                  className="h-full bg-gradient-to-r from-primary to-secondary"
+                />
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Institutional Action Set */}
-      <div className="px-4 pb-6 space-y-3">
+      {/* Actions */}
+      <div className="px-3 pb-6 space-y-2">
         <button 
           onClick={logout}
           className={clsx(
-            'w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl border border-transparent text-[#9aa0a6] hover:text-[#f28b82] hover:bg-[#ea4335]/10 hover:border-[#ea4335]/20 transition-all overflow-hidden',
+            'w-full flex items-center gap-4 px-4 py-3.5 rounded-sm border border-transparent text-text-secondary hover:text-secondary hover:bg-secondary/10 hover:border-secondary/30 transition-all group',
             !sidebarOpen && 'justify-center'
           )}
         >
-          <LogOut size={18} className="flex-shrink-0" />
+          <LogOut size={18} className="transition-transform group-hover:-translate-x-1" />
           <AnimatePresence>
             {sidebarOpen && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[11px] font-black whitespace-nowrap uppercase tracking-widest">
-                Logout Protocol
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[10px] font-bold uppercase tracking-widest">
+                Disconnect
               </motion.span>
             )}
           </AnimatePresence>
         </button>
 
-        {/* Dynamic Expansion Toggle */}
         <button 
           onClick={toggleSidebar}
-          className="w-10 h-10 flex items-center justify-center mx-auto rounded-full bg-[#202124] border border-[#3c4043] text-[#9aa0a6] hover:text-white hover:border-[#8ab4f8] transition-all group shadow-md"
+          className="w-full flex items-center justify-center h-10 rounded-sm bg-white/5 border border-white/10 text-text-secondary hover:text-primary hover:border-primary/50 transition-all shadow-lg active:scale-95"
         >
-          <motion.div animate={{ rotate: sidebarOpen ? 0 : 180 }} transition={{ duration: 0.4 }}>
+          <motion.div animate={{ rotate: sidebarOpen ? 0 : 180 }} transition={{ duration: 0.5 }}>
             <ChevronLeft size={16} />
           </motion.div>
         </button>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -12,7 +12,11 @@ import Layout from './components/Layout';
 import { useStore } from './hooks/useStore';
 
 export default function App() {
-  const { isAuthenticated } = useStore();
+  const { isAuthenticated, initialize } = useStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   return (
     <Routes>

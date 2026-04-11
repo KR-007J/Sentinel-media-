@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useSpring, useTransform } from 'framer-motion';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Terminal } from 'lucide-react';
 import clsx from 'clsx';
 
 function AnimatedNumber({ value }) {
-  const num = parseInt(value.toString().replace(/,/g, '')) || 0;
-  const spring = useSpring(0, { stiffness: 40, damping: 20 });
+  const num = parseInt(value?.toString().replace(/,/g, '')) || 0;
+  const spring = useSpring(0, { stiffness: 45, damping: 25 });
   const display = useTransform(spring, (current) => 
     Math.floor(current).toLocaleString()
   );
@@ -17,58 +17,60 @@ function AnimatedNumber({ value }) {
   return <motion.span>{display}</motion.span>;
 }
 
-export default function StatsCard({ icon: Icon, label, value, sub, trend, trendUp, color = 'indigo', delay = 0 }) {
-  const colors = {
-    blue:   { bg: 'rgba(26,115,232,0.12)', border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.15)' },
-    red:    { bg: 'rgba(217,48,37,0.12)',  border: 'rgba(217,48,37,0.3)',   icon: '#f28b82', glow: 'rgba(217,48,37,0.12)' },
-    green:  { bg: 'rgba(26,115,232,0.12)',  border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.1)' }, // Redirected to Blue
-    yellow: { bg: 'rgba(249,171,0,0.12)',  border: 'rgba(249,171,0,0.3)',   icon: '#fdd663', glow: 'rgba(249,171,0,0.1)' },
-    indigo: { bg: 'rgba(26,115,232,0.12)', border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.15)' },
-    rose:   { bg: 'rgba(217,48,37,0.12)',  border: 'rgba(217,48,37,0.3)',   icon: '#f28b82', glow: 'rgba(217,48,37,0.12)' },
-    emerald:{ bg: 'rgba(26,115,232,0.12)',  border: 'rgba(26,115,232,0.3)',  icon: '#8ab4f8', glow: 'rgba(26,115,232,0.1)' }, // Redirected to Blue
-    amber:  { bg: 'rgba(249,171,0,0.12)',  border: 'rgba(249,171,0,0.3)',   icon: '#fdd663', glow: 'rgba(249,171,0,0.1)' },
-  };
-  const c = colors[color] || colors.indigo;
-
+export default function StatsCard({ icon: Icon, label, value, sub, trend, trendUp, color = 'primary', delay = 0 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-[#2d2e31] border border-[#3c4043] p-8 rounded-[2rem] flex flex-col gap-6 group relative overflow-hidden shadow-xl"
+      initial={{ opacity: 0, x: -20, filter: 'blur(5px)' }}
+      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+      transition={{ delay, duration: 0.5 }}
+      className="glass-card p-6 flex flex-col gap-5 group relative overflow-hidden bg-black/40"
     >
-      {/* Background glow effect */}
-      <div 
-        className="absolute -right-4 -top-4 w-32 h-32 rounded-full blur-[50px] opacity-0 group-hover:opacity-10 transition-opacity duration-700"
-        style={{ background: c.icon }}
-      />
-      
-      <div className="flex items-start justify-between relative z-10">
-        <div 
-          className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:rotate-6 bg-[#202124] border border-[#3c4043] shadow-inner"
-        >
-          <Icon size={24} style={{ color: c.icon }} />
+      {/* HUD Corner Elements */}
+      <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none opacity-20">
+        <div className="absolute top-0 right-0 w-[1px] h-full bg-primary" />
+        <div className="absolute top-0 right-0 w-full h-[1px] bg-primary" />
+      </div>
+
+      <div className="flex items-start justify-between">
+        <div className="w-12 h-12 rounded-sm border border-white/10 flex items-center justify-center bg-white/5 group-hover:border-primary/50 transition-colors shadow-inner relative overflow-hidden">
+          <Icon size={20} className="text-primary group-hover:scale-110 transition-transform relative z-10" />
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
+        
         {trend && (
           <div className={clsx(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black font-mono tracking-widest uppercase border', 
-            trendUp ? 'bg-[#ea4335]/10 text-[#f28b82] border-[#ea4335]/20' : 'bg-[#1a73e8]/10 text-[#8ab4f8] border-[#1a73e8]/20'
+            'flex items-center gap-1.5 px-2 py-1 rounded-sm text-[9px] font-bold font-tech uppercase tracking-tighter border', 
+            trendUp ? 'bg-secondary/10 text-secondary border-secondary/30' : 'bg-primary/10 text-primary border-primary/30'
           )}>
-            {trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+            {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
             {trend}
           </div>
         )}
       </div>
 
-      <div className="relative z-10">
-        <h3 className="text-4xl font-bold text-white tracking-tighter">
-          {typeof value === 'number' || !isNaN(parseInt(value)) ? <AnimatedNumber value={value} /> : value}
-        </h3>
-        <p className="text-[11px] font-black text-[#5f6368] mt-3 tracking-[0.2em] uppercase">
-          {label}
-        </p>
-        {sub && <p className="text-[10px] text-[#5f6368] mt-1.5 font-bold italic opacity-60">{sub}</p>}
+      <div className="space-y-1">
+        <div className="flex items-baseline gap-1">
+          <h3 className="text-3xl font-bold text-white tracking-widest font-tech">
+            {typeof value === 'number' || !isNaN(parseInt(value)) ? <AnimatedNumber value={value} /> : value}
+          </h3>
+          <span className="text-[10px] text-primary/50 font-mono animate-pulse">_REF</span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Terminal size={10} className="text-secondary/50" />
+          <p className="telemetry-label !text-primary/70">{label}</p>
+        </div>
+        
+        {sub && (
+          <p className="text-[9px] text-white/30 font-mono mt-2 flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-secondary animate-pulse" />
+            {sub}
+          </p>
+        )}
       </div>
+      
+      {/* Glitch bar scan on hover */}
+      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-primary/40 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
     </motion.div>
   );
 }

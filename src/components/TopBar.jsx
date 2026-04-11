@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Bell, Search, RefreshCw, Wifi } from 'lucide-react';
+import { Bell, Wifi, Activity, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../hooks/useStore';
 import { format } from 'date-fns';
 
 const PAGE_TITLES = {
-  '/dashboard':  { title: 'Operations Dashboard', sub: 'Real-time threat intelligence overview' },
-  '/scanner':    { title: 'Asset Scanner',         sub: 'AI-powered media fingerprint detection' },
-  '/threat-map': { title: 'Threat Propagation Map', sub: 'Global unauthorized content spread' },
-  '/analytics':  { title: 'Analytics & Insights',   sub: 'Trends, patterns, and performance metrics' },
-  '/reports':    { title: 'Intelligence Reports',    sub: 'AI-generated threat documentation' },
-  '/settings':   { title: 'Configuration',           sub: 'API keys, integrations, and preferences' },
+  '/dashboard':  { title: 'Operations Dashboard', sub: 'Neural Threat Analysis' },
+  '/scanner':    { title: 'Asset Scanner',         sub: 'Holographic Asset Fingerprinting' },
+  '/threat-map': { title: 'Propagation Map',       sub: 'Global Signal Interception' },
+  '/analytics':  { title: 'System Analytics',      sub: 'Algorithmic Performance Data' },
+  '/reports':    { title: 'Intelligence Reports',    sub: 'Classified Documentation' },
+  '/settings':   { title: 'Configuration',           sub: 'System Protocols & Encryption' },
 };
 
 export default function TopBar() {
@@ -19,7 +19,7 @@ export default function TopBar() {
   const { threats, userRole, toggleRole, user } = useStore();
   const [time, setTime] = useState(new Date());
   const [showNotifs, setShowNotifs] = useState(false);
-  const page = PAGE_TITLES[location.pathname] || { title: 'Sentinel-Media', sub: '' };
+  const page = PAGE_TITLES[location.pathname] || { title: 'Sentinel-Media', sub: 'Nexus Point' };
   const newThreats = threats.filter(t => t.status === 'unauthorized').slice(0, 3);
 
   useEffect(() => {
@@ -28,53 +28,72 @@ export default function TopBar() {
   }, []);
 
   return (
-    <header className="h-20 flex items-center justify-between px-8 border-b border-[#3c4043] flex-shrink-0 relative z-20 bg-[#202124]/80 backdrop-blur-xl">
-      <div>
-        <h1 className="text-white text-xl font-bold tracking-tight">{page.title}</h1>
-        <p className="text-[10px] text-[#8ab4f8] uppercase tracking-[0.3em] font-black mt-1">Institutional Node: {page.sub}</p>
+    <header className="h-20 flex items-center justify-between px-8 border-b border-white/10 flex-shrink-0 relative z-20 bg-black/30 backdrop-blur-3xl">
+      <div className="flex flex-col">
+        <h1 className="text-white text-lg font-bold tracking-[0.05em] uppercase font-tech">{page.title}</h1>
+        <div className="flex items-center gap-2 mt-1">
+          <Terminal size={10} className="text-primary animate-pulse" />
+          <p className="telemetry-label text-primary">{page.sub}</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-5">
-        {/* Live Status Indicator */}
-        <div className="hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-[#2d2e31] border border-[#3c4043] text-[10px] font-black font-mono text-[#9aa0a6] uppercase tracking-widest shadow-inner">
-          <div className="relative">
-            <Wifi size={14} className="text-[#1a73e8]" />
-            <motion.div initial={{ scale: 0.8, opacity: 0.5 }} animate={{ scale: 2, opacity: 0 }} transition={{ duration: 2, repeat: Infinity }}
-              className="absolute inset-0 bg-[#1a73e8] rounded-full" />
+      <div className="flex items-center gap-6">
+        {/* Dynamic Global Status HUD */}
+        <div className="hidden lg:flex items-center gap-4 px-5 py-2.5 glass-card rounded-sm border-primary/20 bg-primary/5">
+          <div className="flex items-center gap-2">
+            <Wifi size={14} className="text-primary" />
+            <span className="font-mono text-[10px] text-primary">{format(time, 'HH:mm:ss')}</span>
           </div>
-          <span className="text-white">{format(time, 'HH:mm:ss')}</span>
-          <span className="opacity-20 mx-1">/</span>
-          <span className="text-[#8ab4f8]">Verified Baseline</span>
+          <div className="h-4 w-[1px] bg-primary/20" />
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-secondary" />
+            <span className="telemetry-label">Signal Clear</span>
+          </div>
         </div>
 
-        {/* Notifications Hub */}
+        {/* Intelligence Alerts */}
         <div className="relative">
-          <button onClick={() => setShowNotifs(v => !v)}
-            className="w-12 h-12 flex items-center justify-center rounded-[1rem] border border-[#3c4043] text-[#9aa0a6] hover:text-white hover:bg-white/5 transition-all relative shadow-lg active:scale-95">
-            <Bell size={20} />
+          <button 
+            onClick={() => setShowNotifs(v => !v)}
+            className="w-12 h-12 flex items-center justify-center rounded-sm glass-card border-white/10 text-text-secondary hover:text-white hover:border-primary/50 transition-all relative overflow-hidden"
+          >
+            <Bell size={20} className={clsx(newThreats.length > 0 && "animate-[bounce_2s_infinite]")} />
             {newThreats.length > 0 && (
-              <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-[#ea4335] shadow-[0_0_12px_rgba(234,67,53,0.8)] border-2 border-[#202124]" />
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_10px_rgba(188,19,254,1)] animate-pulse" />
             )}
+            <div className="absolute inset-0 bg-primary/2 opacity-0 hover:opacity-100 transition-opacity" />
           </button>
+          
           <AnimatePresence>
             {showNotifs && (
-              <motion.div initial={{ opacity: 0, y: 12, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12, scale: 0.95 }}
-                className="absolute right-0 top-16 w-80 bg-[#2d2e31] border border-[#3c4043] rounded-[2rem] shadow-2xl p-3 z-50 overflow-hidden">
-                <p className="text-[9px] font-black text-[#5f6368] px-4 py-3 border-b border-[#3c4043] mb-2 uppercase tracking-[0.4em]">Critical Surveillance Intercepts</p>
-                <div className="space-y-1">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 10 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                className="absolute right-0 top-14 w-80 glass-card p-4 z-50 shadow-2xl overflow-hidden min-h-[100px]"
+              >
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                  <p className="telemetry-label font-bold text-white">Threat Feed</p>
+                  <span className="text-[9px] font-mono text-primary animate-pulse">LIVE TRANSMISSION</span>
+                </div>
+                
+                <div className="space-y-3">
                   {newThreats.map(t => (
-                    <div key={t.id} className="flex items-start gap-4 px-4 py-3.5 rounded-2xl hover:bg-[#3c4043] transition-all cursor-pointer group">
-                      <div className="w-2 h-2 rounded-full bg-[#ea4335] mt-1.5 flex-shrink-0 animate-pulse" />
-                      <div>
-                        <p className="text-[13px] text-white font-bold truncate tracking-tight">{t.url}</p>
-                        <p className="text-[10px] text-[#5f6368] font-bold uppercase tracking-tight mt-0.5 group-hover:text-[#8ab4f8] transition-colors">{t.similarity}% match · {t.location}</p>
+                    <div key={t.id} className="p-3 bg-white/5 border border-white/10 rounded-sm hover:border-primary/40 transition-all group cursor-pointer relative overflow-hidden">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-[11px] font-bold text-white truncate max-w-[180px] font-tech">{t.url}</p>
+                        <span className="text-[8px] px-1.5 py-0.5 bg-secondary/10 border border-secondary/20 text-secondary font-bold uppercase">Critical</span>
                       </div>
+                      <p className="telemetry-label !text-[8px] opacity-40">{t.location} • Signature {t.similarity}%</p>
+                      
+                      {/* Interactive glitch effect on hover */}
+                      <div className="absolute inset-0 bg-primary/5 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     </div>
                   ))}
+                  
                   {newThreats.length === 0 && (
-                    <div className="p-8 text-center text-[#5f6368]">
-                      <RefreshCw size={24} className="mx-auto mb-3 opacity-20" />
-                      <p className="text-[10px] font-black uppercase tracking-widest">No Active Threat Signal</p>
+                    <div className="py-6 text-center opacity-40">
+                      <p className="telemetry-label">All Nodes Secure</p>
                     </div>
                   )}
                 </div>
@@ -83,18 +102,39 @@ export default function TopBar() {
           </AnimatePresence>
         </div>
 
-        {/* Dynamic User Role Authentication */}
-        <button onClick={toggleRole} className="flex items-center gap-4 pl-5 border-l border-[#3c4043] group active:scale-95 transition-transform">
-          <div className="text-right hidden md:block">
-            <p className="text-sm font-bold text-white leading-tight tracking-tight">{userRole === 'senior' ? 'Lead Operative' : 'Analyst Node'}</p>
-            <p className="text-[9px] text-[#8ab4f8] font-black tracking-widest uppercase mt-0.5">{userRole === 'senior' ? 'Auth Level 4' : 'Read Only'}</p>
+        {/* Identity Authorization */}
+        <button 
+          onClick={toggleRole} 
+          className="flex items-center gap-4 pl-6 border-l border-white/10 group transition-all"
+        >
+          <div className="text-right hidden sm:block">
+            <p className="text-xs font-bold text-white uppercase tracking-wider font-tech leading-none">
+              {userRole === 'senior' ? 'Arch-Operative' : 'Spectral Analyst'}
+            </p>
+            <p className="telemetry-label text-primary mt-1">Auth Level {userRole === 'senior' ? '007' : '001'}</p>
           </div>
-          <div className="w-11 h-11 rounded-[1.2rem] flex items-center justify-center text-sm font-black text-white transition-all shadow-xl group-hover:rotate-12"
-            style={{ background: `linear-gradient(135deg, ${userRole === 'senior' ? '#1a73e8, #8ab4f8' : '#3c4043, #202124'})` }}>
-            {user?.name?.[0] || 'G'}
+          <div 
+             className="w-11 h-11 rounded-sm flex items-center justify-center text-sm font-bold text-black border border-primary/50 relative overflow-hidden transition-all group-hover:scale-105"
+             style={{ background: userRole === 'senior' ? 'var(--primary)' : 'var(--glass)' }}
+          >
+            <span className="relative z-10 transition-colors duration-300" style={{ color: userRole === 'senior' ? 'black' : 'white' }}>
+              {user?.name?.[0] || 'S'}
+            </span>
+            {userRole === 'senior' && (
+              <div className="absolute inset-0 bg-white/30 skew-x-[-20deg] animate-[shine_3s_infinite]" />
+            )}
           </div>
         </button>
       </div>
+      
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes shine {
+          0% { transform: translateX(-200%) skew(-20deg); }
+          100% { transform: translateX(200%) skew(-20deg); }
+        }
+      `}} />
     </header>
   );
 }
+
+const clsx = (...classes) => classes.filter(Boolean).join(' ');

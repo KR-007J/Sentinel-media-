@@ -12,7 +12,7 @@ function Particles({ count = 3000 }) {
     for (let i = 0; i < count; i++) {
       const t = Math.random() * 100;
       const factor = 20 + Math.random() * 100;
-      const speed = 0.01 + Math.random() / 200;
+      const speed = 0.005 + Math.random() / 400; // Slowed down for professional feel
       const xFactor = -50 + Math.random() * 100;
       const yFactor = -50 + Math.random() * 100;
       const zFactor = -50 + Math.random() * 100;
@@ -27,14 +27,14 @@ function Particles({ count = 3000 }) {
       t = particle.t += speed / 2;
       const a = Math.cos(t) + Math.sin(t * 1) / 10;
       const b = Math.sin(t) + Math.cos(t * 2) / 10;
-      const s = Math.cos(t);
+      const s = Math.cos(t) * 0.5 + 0.5; // Scale pulsing
       dummy.position.set(
         (particle.mx / 10) * a + xFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 1) * factor) / 10,
         (particle.my / 10) * b + yFactor + Math.sin((t / 10) * factor) + (Math.cos(t * 2) * factor) / 10,
         (particle.my / 10) * b + zFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 3) * factor) / 10
       );
-      dummy.scale.set(s, s, s);
-      dummy.rotation.set(s * 5, s * 5, s * 5);
+      dummy.scale.set(s * 0.5, s * 0.5, s * 0.5);
+      dummy.rotation.set(s * 2, s * 2, s * 2);
       dummy.updateMatrix();
       mesh.current.setMatrixAt(i, dummy.matrix);
     });
@@ -43,10 +43,10 @@ function Particles({ count = 3000 }) {
 
   return (
     <>
-      <pointLight ref={light} distance={40} intensity={8} color="#6366f1" />
+      <pointLight ref={light} distance={40} intensity={10} color="#00f3ff" />
       <instancedMesh ref={mesh} args={[null, null, count]}>
-        <dodecahedronGeometry args={[0.12, 0]} />
-        <meshStandardMaterial color="#4f46e5" roughness={0.5} />
+        <dodecahedronGeometry args={[0.1, 0]} />
+        <meshStandardMaterial color="#00f3ff" roughness={0} metalness={1} emissive="#00f3ff" emissiveIntensity={2} />
       </instancedMesh>
     </>
   );
@@ -54,12 +54,12 @@ function Particles({ count = 3000 }) {
 
 export default function ThreeBackground() {
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
-      <Canvas camera={{ position: [0, 0, 50], fov: 75 }}>
-        <fog attach="fog" args={['#0a0c18', 30, 90]} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[100, 10, -50]} intensity={20} color="#8b5cf6" />
-        <pointLight position={[-100, -100, -100]} intensity={10} color="#3b82f6" />
+    <div className="fixed inset-0 z-0 pointer-events-none">
+      <Canvas camera={{ position: [0, 0, 80], fov: 60 }}>
+        <fog attach="fog" args={['#050505', 40, 120]} />
+        <ambientLight intensity={0.2} />
+        <pointLight position={[100, 10, -50]} intensity={15} color="#bc13fe" />
+        <pointLight position={[-100, -100, -100]} intensity={5} color="#00f3ff" />
         <Particles />
       </Canvas>
     </div>
