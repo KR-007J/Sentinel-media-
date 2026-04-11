@@ -8,15 +8,18 @@ export const seedDatabase = async () => {
   if (count === 0) {
     console.log('Seeding database with tactical data...');
     
-    // Cleanup IDs for auto-generation
-    const threats = MOCK_THREATS.map(({ id, ...rest }) => ({
+    // Cleanup IDs for auto-generation and map fields
+    const threats = MOCK_THREATS.map(({ id, timestamp, ...rest }) => ({
        ...rest,
+       created_at: timestamp || new Date().toISOString(),
        risk: rest.risk || 'medium',
        status: rest.status || 'unauthorized'
     }));
 
-    const assets = MOCK_ASSETS.map(({ id, ...rest }) => ({
+    const assets = MOCK_ASSETS.map(({ id, uploadedAt, threats, ...rest }) => ({
        ...rest,
+       threats_count: threats || 0,
+       created_at: uploadedAt || new Date().toISOString(),
        status: rest.status || 'monitored'
     }));
 

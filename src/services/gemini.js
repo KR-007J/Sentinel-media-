@@ -138,3 +138,46 @@ export async function generateReport(threats) {
     return 'EXECUTIVE SUMMARY\n\nOngoing monitoring has identified ' + threats.length + ' incidents of unauthorized redistribution. System-wide risk score is currently elevated. Recommended action: Synchronize ISP webhooks for bulk removal.';
   }
 }
+
+export async function generateLiveThreat() {
+  const prompt = `Generate a realistic, futuristic single cybersecurity threat interception record for a digital asset protection platform.
+Return ONLY valid JSON with this exact structure:
+{
+  "platform": "Twitter | Telegram | Discord | Web | DarkWeb | Torrent",
+  "url": "https://<random_domain>/<path>",
+  "similarity": <number between 75 and 99>,
+  "location": "<City>, <Country>",
+  "risk": "high | medium | low",
+  "status": "unauthorized | suspicious",
+  "asset": "Premium Sports Broadcast | Unreleased Cyberpunk Movie | Classified Blueprint | Internal Database",
+  "views": <number between 50 and 50000>
+}`;
+
+  try {
+    const res = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.9, maxOutputTokens: 250 } }),
+    });
+    
+    if (!res.ok) throw new Error("API Limit");
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    return parsed;
+  } catch (err) {
+    // Fallback if Gemini fails or rate limits
+    const platforms = ['Telegram', 'DarkWeb', 'Discord', 'Twitter'];
+    const risks = ['medium', 'high'];
+    return {
+      platform: platforms[Math.floor(Math.random() * platforms.length)],
+      url: `https://anon-host.net/leak-${Math.floor(Math.random() * 1000)}`,
+      similarity: Math.floor(Math.random() * 25) + 75,
+      location: 'Unknown Proxy',
+      risk: risks[Math.floor(Math.random() * risks.length)],
+      status: 'unauthorized',
+      asset: 'Confidential Internal File',
+      views: Math.floor(Math.random() * 1000)
+    };
+  }
+}

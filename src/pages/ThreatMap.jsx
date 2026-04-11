@@ -104,7 +104,7 @@ export default function ThreatMap() {
                   <div className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 shadow-lg ${t.status === 'unauthorized' ? 'bg-[#ea4335] shadow-[#ea4335]/20' : 'bg-[#fbbc05] shadow-[#fbbc05]/20'}`} />
                   <div className="min-w-0">
                     <p className="text-xs font-black text-white truncate group-hover:text-[#8ab4f8] transition-colors">{t.url}</p>
-                    <p className="text-[10px] text-[#5f6368] font-bold uppercase tracking-tight mt-1">{t.location} · {formatDistanceToNow(new Date(t.timestamp))} ago</p>
+                    <p className="text-[10px] text-[#5f6368] font-bold uppercase tracking-tight mt-1">{t.location} · {formatDistanceToNow(new Date(t.created_at))} ago</p>
                   </div>
                 </div>
               ))}

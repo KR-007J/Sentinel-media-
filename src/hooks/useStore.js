@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { seedDatabase } from '../lib/dbSeed';
+import { generateLiveThreat } from '../services/gemini';
 
 // Helper to handle Supabase responses
 const handleResponse = (data, error) => {
@@ -65,6 +66,22 @@ export const useStore = create((set, get) => ({
         if (eventType === 'DELETE') set({ assets: currentAssets.filter(a => a.id !== oldRow.id) });
       })
       .subscribe();
+
+    // 3. Live Intelligent Data Stream (Gemini Simulation)
+    if (!window.liveStreamStarted) {
+      window.liveStreamStarted = true;
+      // Start pushing a live threat to Supabase every 15 seconds
+      setInterval(async () => {
+        try {
+          const newThreat = await generateLiveThreat();
+          if (newThreat) {
+            await supabase.from('threats').insert([newThreat]);
+          }
+        } catch (e) {
+          console.error("Live stream pause:", e);
+        }
+      }, 15000);
+    }
   },
 
   // THREAT ACTIONS
