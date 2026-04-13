@@ -12,11 +12,40 @@ import Layout from './components/Layout';
 import { useStore } from './hooks/useStore';
 
 export default function App() {
-  const { isAuthenticated, initialize } = useStore();
+  const { isAuthenticated, initialize, loading, error } = useStore();
 
   useEffect(() => {
-    initialize();
+    const unsub = initialize();
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
   }, [initialize]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-6">
+        <div className="relative w-24 h-24">
+          <div className="absolute inset-0 rounded-full border-4 border-cyan-500/10 border-t-cyan-500 animate-spin" />
+          <div className="absolute inset-4 rounded-full border-4 border-purple-500/10 border-b-purple-500 animate-spin-reverse" />
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <h2 className="text-white font-black uppercase tracking-[0.4em] text-xs font-tech animate-pulse">Initializing Sentinel Zero</h2>
+          <p className="text-slate-500 text-[10px] uppercase tracking-widest font-bold font-tech">Synchronizing Global Defense Nodes</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <h2 className="text-red-500 font-bold text-xl">System Error</h2>
+          <p className="text-slate-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Routes>

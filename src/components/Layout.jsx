@@ -6,7 +6,7 @@ import ThreeBackground from './ThreeBackground';
 import { useStore } from '../hooks/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Layout() {
+export default function Layout({ children }) {
   const sidebarOpen = useStore(s => s.sidebarOpen);
   const location = useLocation();
 
@@ -40,7 +40,7 @@ export default function Layout() {
                   exit={{ opacity: 0, y: -15, filter: 'blur(10px)' }}
                   transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 >
-                  <Outlet />
+                  {children || <Outlet />}
                 </motion.div>
               </AnimatePresence>
             </div>

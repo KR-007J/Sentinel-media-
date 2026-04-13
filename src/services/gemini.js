@@ -1,106 +1,140 @@
 // Sentinel Zero — AI Threat Intelligence Service
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+// Use flash-latest for better compatibility with v1beta
+const MODEL = "gemini-1.5-flash-latest"; 
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
 /**
- * Explains a security threat in human-readable tactical language.
+ * Generic Fetcher with Fallback and Logging
+ */
+async function callGemini(prompt) {
+  if (!API_KEY || API_KEY === 'undefined') {
+    console.error('Gemini API Key missing');
+    return null;
+  }
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      console.error('Gemini API Error:', errData);
+      throw new Error(`Gemini API returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+  } catch (error) {
+    console.error('Gemini Request Failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Provides a technical XAI explanation for a threat.
  */
 export async function getThreatExplanation(threat) {
   const prompt = `
-    As a Senior Security Architect at Sentinel Zero, analyze this threat event and provide a concise, high-fidelity explanation.
+    ACT AS A SENIOR CYBERSECURITY ARCHITECT.
+    ANALYZE THIS THREAT EVENT IDENTIFIED BY SENTINEL-ZERO:
+    ---
+    URL: ${threat.url}
+    PLATFORM: ${threat.platform}
+    REASON: ${threat.reason}
+    SEVERITY: ${threat.severity || 'Medium'}
+    RISK SCORE: ${threat.risk_score || 50}
+    ---
+    PROVIDE A STRUCTURED ANALYSIS IN THE FOLLOWING FORMAT:
+    1. SUMMARY: A 2-sentence executive overview.
+    2. TECHNICAL ANALYSIS: Details on why this was flagged (mention Zero Trust rules).
+    3. REMEDIATION: Step-by-step technical instructions for mitigation.
     
-    THREAT DATA:
-    - Type: ${threat.type}
-    - Severity: ${threat.severity}
-    - Risk Score: ${threat.risk_score}/100
-    - Description: ${threat.description}
-    - Detected Flags: ${threat.flags?.join(', ') || 'N/A'}
-    
-    RESPONSE STRUCTURE (Markdown):
-    1. **Analysis**: 1-2 sentences explain why this is a threat from a Zero Trust perspective.
-    2. **Technical Details**: Brief bullet points on the attack vector (e.g., identity spoofing, velocity matching).
-    3. **Remediation**: 2 immediate tactical actions for the SOC team.
-    
-    Keep it professional, high-tech, and under 150 words.
+    KEEP IT PROFESSIONAL, TACTICAL, AND CONCISE.
   `;
-
-  try {
-    const res = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
-      }),
-    });
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'ANALYSIS COMPLETE: Threat matches known adversarial pattern. Elevated vigilance recommended.';
-  } catch (err) {
-    return 'Analysis Core Offline: Local heuristics identify this as a significant vector for lateral movement. Protocol dictates immediate session audit and MFA challenge.';
-  }
-}
-
-
-/**
- * Analyzes a raw event log for hidden anomalies.
- */
-export async function analyzeLogAnomalies(logData) {
-  const prompt = `Analyze this system log for Zero Trust violations or security anomalies:
-  "${logData}"
   
-  Return a JSON object:
-  {
-    "anomalyDetected": boolean,
-    "confidence": 0-1,
-    "likelyVector": "string",
-    "recommendation": "string"
-  }`;
-
-  try {
-    const res = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.1 },
-      }),
-    });
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    return JSON.parse(text);
-  } catch (err) {
-    return { anomalyDetected: false, confidence: 0, likelyVector: 'N/A', recommendation: 'Manual audit required' };
-  }
+  return await callGemini(prompt);
 }
 
 /**
- * Generates a realistic live security threat event.
+ * Generates an Intelligence Dossier for legal/admin use.
+ */
+export async function createLegalDossier(threat) {
+  const prompt = `
+    GENERATE A FORMAL "LEGAL EVIDENCE DOSSIER" FOR COPYRIGHT INFRINGEMENT.
+    ID: ${threat.id}
+    EVIDENCE: ${threat.url}
+    TIMESTAMP: ${new Date().toISOString()}
+    
+    INCLUDE:
+    - CHAIN OF CUSTODY OVERVIEW
+    - FORENSIC IMAGE/SOURCE VERIFICATION
+    - DIGITAL MILLENNIUM COPYRIGHT ACT (DMCA) COMPLIANCE VERDICT
+    - RECOMMENDED ENFORCEMENT ACTION
+  `;
+  
+  return await callGemini(prompt);
+}
+
+/**
+ * Compiles a multi-threat summary report.
+ */
+export async function generateReport(threats) {
+  const threatSummary = threats.map(t => `- ${t.url} (${t.platform}): ${t.reason}`).join('\n');
+  const prompt = `
+    GENERATE AN "EXECUTIVE THREAT MATRIX" REPORT BASED ON THESE INCIDENTS:
+    ${threatSummary}
+    
+    FOCUS ON:
+    - SYSTEMIC PROPAGATION TRENDS
+    - REGIONAL RISK CLUSTERS
+    - INFRASTRUCTURE VULNERABILITES EXPOSED
+  `;
+  
+  return await callGemini(prompt);
+}
+
+/**
+ * AI-Powered scan analyzer
+ */
+export async function analyzeScan(data) {
+  const prompt = `
+    PERFORM A NEURAL VULNERABILITY AUDIT ON THIS DATA:
+    ${JSON.stringify(data)}
+    
+    OUTPUT:
+    1. RISK SCORE (0-100)
+    2. KEY VULNERABILITIES FOUND
+    3. AI RECOMMENDATIONS
+  `;
+  
+  return await callGemini(prompt);
+}
+
+/**
+ * Simulated threat generator
  */
 export async function generateLiveThreat() {
-  const prompt = `Generate a futuristic cybersecurity threat event for a Zero Trust dashboard.
-  Return ONLY valid JSON:
-  {
-    "type": "e.g. Brute Force, Token Hijacking, SQLi, Port Scan",
-    "severity": "CRITICAL | WARNING | INFO",
-    "risk_score": <number 50-100>,
-    "description": "Short technical summary",
-    "flags": ["Flag 1", "Flag 2"]
-  }`;
-
+  const prompt = "GENERATE A JSON OBJECT (ONLY) REPRESENTING A CYBER THREAT. FIELDS: url, platform, reason, risk_score (0-100), severity (Low, Medium, High).";
+  const res = await callGemini(prompt);
   try {
-    const res = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-    });
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    return JSON.parse(text.replace(/```json|```/g, '').trim());
-  } catch (err) {
+    return JSON.parse(res);
+  } catch {
     const fallbacks = [
-      { type: 'DDoS Swarm', severity: 'CRITICAL', risk_score: 94, description: 'Distributed UDP flood originating from botnet cluster 0xD2', flags: ['High Velocity', 'Spoofed IP'] },
-      { type: 'Credential Stuffing', severity: 'WARNING', risk_score: 62, description: 'Rapid sequential login failures detected on identity endpoint', flags: ['Auth Failure'] },
-      { type: 'Lateral Movement', severity: 'CRITICAL', risk_score: 88, description: 'Suspicious escalation of privileges from unauthenticated node', flags: ['PrivEsc'] }
+      { url: 'https://malicious-node.io', platform: 'Web', reason: 'DDoS Swarm', severity: 'CRITICAL', risk_score: 94 },
+      { url: 'https://auth-bypass.net', platform: 'Identity', reason: 'Credential Stuffing', severity: 'WARNING', risk_score: 62 },
+      { url: 'internal-server-01', platform: 'Network', reason: 'Lateral Movement', severity: 'CRITICAL', risk_score: 88 }
     ];
     return fallbacks[Math.floor(Math.random() * fallbacks.length)];
   }
