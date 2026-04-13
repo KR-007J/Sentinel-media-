@@ -1,123 +1,100 @@
 <div align="center">
   <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Sentinel-Zero Logo" width="100" height="100" />
-  <h1>🛡️ Sentinel-Zero — AI Security Operating System</h1>
-  <p><strong>Enterprise-grade AI security platform for digital asset integrity. Engineered with the "Google Developer Console" aesthetic for professional operational efficiency.</strong></p>
+  <h1>🛡️ Sentinel-Zero — Enterprise AI Security Hub</h1>
+  <p><strong>A deterministic, production-grade cybersecurity command center with advanced Role-Based Access Control (RBAC), AI-powered threat analysis, and real-time incident response simulation.</strong></p>
   
-  [![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+  [![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org/)
   [![Google Brand](https://img.shields.io/badge/Design-Google%20Developer%20Brand-1a73e8.svg)](https://developers.google.com/)
   [![Google Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-1a73e8.svg)](https://deepmind.google/technologies/gemini/)
-  [![Firebase](https://img.shields.io/badge/Infrastructure-Firebase-FFCA28.svg)](https://firebase.google.com/)
+  [![Firebase](https://img.shields.io/badge/Backend-Firebase-FFCA28.svg)](https://firebase.google.com/)
+  [![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E.svg)](https://supabase.com/)
+  [![RBAC](https://img.shields.io/badge/Security-RBAC%20Enforced-critical.svg)](#-deterministic-role-based-access-control-rbac)
 </div>
 
 <hr />
 
-## 📖 Table of Contents
-1. [🌟 Overview](#-overview)
-2. [🎨 Design & Color Psychology](#-design--color-psychology)
-3. [✨ Core Features](#-core-features)
-4. [🏗️ Architecture & Tech Stack](#️-architecture--tech-stack)
-5. [📁 Project Structure](#-project-structure)
-6. [⚙️ Setup & Installation](#️-setup--installation)
-7. [🔐 API Keys & Configuration](#-api-keys--configuration)
-8. [🚀 Deployment Guide](#-deployment-guide)
-9. [🎬 Demo Walkthrough](#-demo-walkthrough)
-10. [🏆 Unique Differentiators](#-unique-differentiators)
-
-<hr />
-
-## 🌟 Overview
-
-**Sentinel-Zero** is a production-hardened AI-OS designed for global sports media conglomerates. It transitions away from standard "cyberpunk" visuals toward a sophisticated, high-legibility **Google Developer** interface. By combining **Content DNA Synthesis** with **Gemini 1.5 Flash**, the system provides a millisecond-precision response to unauthorized asset redistribution.
-
-## 🎨 Design & Color Psychology
-
-The platform follows the official **Google Developer Brand Palette**, optimizing for cognitive clarity, technical and legal authority, and prolonged operational focus.
-
-| Color Token | Hex | Psychological Role | System Application |
-|-------|-----|-------------------|-----------------|
-| **Google Blue** | `#1a73e8` | **Authority & Precision** | Primary actions, navigation states, and AI verification. |
-| **Google Red** | `#d93025` | **Critical Response** | High-criticality threat alerts and unauthorized flags. |
-| **Google Yellow** | `#f9ab00` | **Cautionary Insight** | Suspicious activity nodes and manual reviews. |
-| **Google Green** | `#34a853` | **Secure Integrity** | System heartbeat, verified assets, and anchor points. |
-| **Dark Charcoal** | `#202124` | **Institutional Stability** | Persistent background layers to maximize text legibility. |
-
-## ✨ Core Features
-
-| System Matrix | Technical Implementation | Operational Goal |
-|----------------------|-----------------------|----------------|
-| **🧬 Content DNA Synthesis** | Perceptual hashing (pHash) + Multi-layer embeddings. | Resilience against cropping, skewing, and resolution shifts. |
-| **🤖 Gemini Vision Logic** | Multimodal analysis of media frames via 1.5 Flash. | Deep contextual understanding of broadcast watermarks. |
-| **🏛️ Sovereign Legal Engine** | AI-drafted judicial dossiers and DMCA injunctions. | Sub-5 second transformation of detection to legal notice. |
-| **🗺️ Global Intelligence Map** | Canvas-driven 3D geospatial propagation tracker. | Real-time visualization of threat vectors across edge nodes. |
-| **📊 Analytics Console** | Recharts-powered telemetry trends and KPIs. | High-fidelity visibility into global platform vulnerability. |
-| **⚡ Real-time Synchronization** | Firebase Firestore + Live Snapshot Listeners. | Instant global updates to the threat mattress upon login. |
+## 📖 Executive Summary
+**Sentinel-Zero** is a sophisticated, high-authority AI-OS engineered for enterprise-tier asset protection and threat intelligence. Moving beyond standard dashboards, it implements a **Deterministic Role-Based Access Control (RBAC)** system with cinematic state transitions, simulating a high-security operational environment. Powered by **Gemini 1.5 Flash** and a multi-layered cloud backbone, it provides sub-second detection and automated forensic compilation.
 
 ---
 
-## 🏗️ Architecture & Tech Stack
-
-### Frontend Execution
-* **React 18**: Component-based architecture with advanced hooks.
-* **Vite**: Rapid-response build pipeline.
-* **Zustand**: Clean, centralized state management without boilerplate overhead.
-* **Framer Motion**: Deliberate, professional micro-animations.
-
-### AI & Infrastructure
-* **Google Gemini 1.5 Flash**: Cognitive reasoning for risk forecasting and evidence compilation.
-* **Firebase**: Serverless backbone for authentication, hosting, and real-time data persistence.
-* **Tailwind CSS Polyfill**: Precision layout engine using Google brand tokens.
+## 🛠️ Core Competencies & Tech Stack
+- **Frontend Architecture:** React 18, Vite, Zustand (State Management), Framer Motion (Cinematic UI Transitions).
+- **Security Logic:** Hardened RBAC state machine, Zero-Trust authentication flow, and interactive Simulation Mode.
+- **Backend Infrastructure:** Firebase (Auth, Hosting), Supabase (Postgres Real-time DB), Gemini 1.5 Flash (AI Reasoning).
+- **Design System:** Strict adherence to **Google Developer Brand Palette** for technical authority and cognitive clarity.
 
 ---
 
-## ⚙️ Setup & Installation
+## 🔐 Deterministic Role-Based Access Control (RBAC)
+The system enforces strict permission headers across all modules, featuring secure atomic transitions and persistent mode indicators.
 
-### Prerequisites
-* **Node.js**: v18.0.0+
-* **Firebase CLI**: `npm install -g firebase-tools`
-* **Google Cloud Project**: For Gemini API access.
+| Role | Access Level | Visual Indicator | Permissions |
+|:---:|:---:|:---:|---|
+| **ADMIN** | High | `RED (Critical Color)` | Full system override, Lockdown mode, Threat resolution, Simulation control. |
+| **ANALYST** | Medium | `BLUE (Standard Color)` | Neural scanning, Risk assessment, Telemetry review, Feed monitoring. |
+| **VIEWER** | Low | `GREY (Restricted Color)` | Read-only access to global metrics. All tactical actions are disabled with tooltips. |
 
-### Quick Start
+---
+
+## 🏗️ Technical Features
+
+### 1. 🧬 Content DNA & AI Forensics
+- **Explainable Forensics:** Every threat detection includes a multimodal AI reasoning trail provided by Gemini.
+- **Explainable SIEM Logs:** Every event is logged using structured cybersecurity formats `[SUBSYSTEM] ACTION | src:IP → tgt:Path | status:CODE`.
+
+### 2. 🎮 Interactive Adversarial Simulations
+- **Attack Profiles:** Real-time simulation of XSS Payloads, SQL Injection vectors, and Distributed Bot Scraping.
+- **Deterministic Response:** Defenses like `Strategic Firewall` or `2FA Enforcement` actively filter incoming threat feeds.
+
+### 3. 🚨 System Lockdown Mode
+- **Mic-Drop Security:** A coordinated system-wide event that terminates active threats, secures the network perimeter, and forces a secure baseline state.
+
+---
+
+## 📁 Repository Structure
+```bash
+src/
+├── components/   # Modular UI components (Sidebar, Dashboard Units)
+├── hooks/        # Hardened Zustand store (RBAC & Logic Core)
+├── pages/        # High-authority views (Dashboard, Scanner, Login)
+├── services/     # API Integration (Gemini, Supabase, Firebase)
+└── index.css     # Enterprise Design System (Google Tokens)
+```
+
+---
+
+## ⚙️ Setup & Deployment
 
 1. **Clone & Install**
    ```bash
    git clone https://github.com/KR-007J/Sentinel-Zero.git
-   cd Sentinel-Zero
    npm install
    ```
 
 2. **Environment Configuration**
-   Create a `.env` in the root and include your Google brand engine keys:
    ```env
-   VITE_GEMINI_API_KEY=your_gemini_flash_key
-   VITE_FIREBASE_API_KEY=your_firebase_key
+   VITE_GEMINI_API_KEY=your_key
+   VITE_SUPABASE_URL=your_url
+   VITE_SUPABASE_ANON_KEY=your_key
    ```
 
-3. **Development Run**
+3. **Build & Deploy**
    ```bash
-   npm run dev
+   npm run build
+   firebase deploy --only hosting
    ```
 
 ---
 
-## 🚀 Deployment Guide
-
-### Firebase Hosting (Recommended)
-Sentinel-Zero is optimized for Firebase infrastructure:
-```bash
-npm run build
-firebase deploy --only hosting
-```
-
-### GitHub Actions (CI/CD)
-Automated deployments are configured for the `main` branch, ensuring that every push triggers a production build and deployment to the configured hosting provider.
+## 🏆 Industrial Differentiators
+- 📡 **Zero-Latency Monitoring:** Real-time Supabase snapshot listeners for instant threat propagation.
+- 🎨 **Enterprise Aesthetic:** High-legibility Google Brand design optimized for professional security operations.
+- ⚖️ **Audit-Ready:** Maintains detailed operator activity logs and AI-anchored evidence dossiers.
 
 ---
 
-## 🏆 Unique Differentiators
-
-* 📡 **Zero-Latency Monitoring:** Detection cycles completed in under 4 seconds globally.
-* ⚖️ **Explainable Forensics:** Every flag includes a multimodal AI reasoning trail.
-* 🏛️ **Court-Ready Evidence:** Generates cryptographically anchored dossiers for legal teams.
-* 🎨 **Professional Aesthetic:** Eliminates the "gaming" look for a serious, enterprise-tier console experience.
-
-<p align="center"><b>Authorized Personnel Only. Developed for Global Content Integrity.</b></p>
+<p align="center">
+  <b>Developed by Krish Joshi</b><br />
+  &copy; All Rights Reserved 2026
+</p>
