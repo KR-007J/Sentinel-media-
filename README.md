@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Sentinel-Zero Logo" width="100" height="100" />
+  <img src="./public/logo.png" alt="Sentinel-Zero Logo" width="160" />
   <h1>🛡️ Sentinel-Zero — Enterprise AI Security Hub</h1>
   <p><strong>A deterministic, production-grade cybersecurity command center with advanced Role-Based Access Control (RBAC), AI-powered threat analysis, and real-time incident response simulation.</strong></p>
   
@@ -10,6 +10,18 @@
   [![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E.svg)](https://supabase.com/)
   [![RBAC](https://img.shields.io/badge/Security-RBAC%20Enforced-critical.svg)](#-deterministic-role-based-access-control-rbac)
 </div>
+
+---
+
+## 🎯 Challenge Vertical: Cybersecurity & Digital Safety Assistant
+**Sentinel-Zero** is built as a **Smart Digital Safety Assistant** for high-security environments. It moves beyond passive monitoring by using Gemini 1.5 Flash to provide explainable forensics, actionable mitigation steps, and context-aware security posture updates.
+
+### 🧠 Logic & Decision Making
+- **Deterministic RBAC**: The system evaluates user roles (ADMIN, ANALYST, VIEWER) at every state transition. 
+- **AI-Powered HEURISTICS**: Instead of basic regex, the "Neural Core" (Gemini) analyzes threat vectors to understand Intent vs. Anomalous but safe behavior.
+- **Explainable SIEM**: Every alert contains a logic trail from Gemini explaining *why* it was flagged, reducing cognitive load on security operators.
+
+---
 
 <hr />
 
@@ -91,6 +103,20 @@ src/
 - 📡 **Zero-Latency Monitoring:** Real-time Supabase snapshot listeners for instant threat propagation.
 - 🎨 **Enterprise Aesthetic:** High-legibility Google Brand design optimized for professional security operations.
 - ⚖️ **Audit-Ready:** Maintains detailed operator activity logs and AI-anchored evidence dossiers.
+
+---
+
+## 🧪 Testing & Quality Assurance
+Sentinel-Zero prioritizes reliability through a comprehensive testing suite:
+- **Unit Testing:** Powered by `Vitest`. Focuses on the core `SentinelEngine` risk calculation and RBAC logic.
+- **Coverage:** Ensures that all high-risk logic transitions (e.g., threat detection thresholds) are verified and reproducible.
+- **Command:** `npm test`
+
+## ♿ Accessibility Compliance
+Engineered for inclusive security operations following WCAG 2.1 guidelines:
+- **Semantic HTML & ARIA:** Comprehensive use of ARIA 1.1 landmarks, live regions, and labels (`role="status"`, `aria-live="polite"`).
+- **Labeling:** All interactive elements, including AI copy buttons and scan triggers, feature clear descriptive labels for screen readers.
+- **Visual Clarity:** High-contrast color palettes (following Google Developer standards) ensure readability for users with visual impairments.
 
 ---
 

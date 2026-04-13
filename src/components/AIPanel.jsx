@@ -39,8 +39,8 @@ export default function AIPanel({ result, loading, onClose }) {
             <span className="text-[9px] text-slate-500 font-mono uppercase tracking-tighter">Neural Thread Analysis Active</span>
           </div>
         </div>
-        <button onClick={copy} className="p-2 rounded-lg border border-slate-800 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-400 transition-all">
-          {copied ? <CheckCheck size={14} /> : <Copy size={14} />}
+        <button onClick={copy} aria-label="Copy AI analysis to clipboard" className="p-2 rounded-lg border border-slate-800 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-400 transition-all">
+          {copied ? <CheckCheck size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
         </button>
       </div>
 

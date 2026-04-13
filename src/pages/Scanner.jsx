@@ -40,7 +40,7 @@ export default function Scanner() {
   const [aiLoading, setAiLoading] = useState(false);
 
   // RBAC Check
-  const canScan = checkPermission('START_SCAN');
+  const canScan = checkPermission('RUN_SCAN');
 
   const onDrop = useCallback((files) => {
     if (!canScan) return;
@@ -176,18 +176,19 @@ export default function Scanner() {
     <div className="space-y-8 pb-12">
       {/* HUD STEPPER */}
       <div className="glass-card p-2 rounded-2xl border-slate-800 bg-slate-900/40">
-        <div className="flex items-center gap-2">
+        <nav className="flex items-center gap-2" aria-label="Scan progress">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.key}>
-              <div className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-xl transition-all duration-500
+              <div role="status" aria-current={i === stepIdx ? 'step' : undefined} 
+                className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-xl transition-all duration-500
                 ${i <= stepIdx ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.1)]' : 'text-slate-600'}`}>
                 <s.icon size={16} className={i === stepIdx ? 'animate-pulse' : ''} />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] hidden md:block">{s.label}</span>
               </div>
-              {i < STEPS.length - 1 && <div className="w-4 h-[1px] bg-slate-800" />}
+              {i < STEPS.length - 1 && <div className="w-4 h-[1px] bg-slate-800" aria-hidden="true" />}
             </React.Fragment>
           ))}
-        </div>
+        </nav>
       </div>
 
       <div className="grid lg:grid-cols-12 gap-8">
