@@ -13,18 +13,20 @@ import { getThreatExplanation } from '../services/gemini';
 
 export default function Dashboard() {
   const { 
-    threats, 
-    globalRiskScore, 
-    isSimulationActive, 
-    triggerSimulation, 
-    stopSimulation,
-    protectedSystem,
-    applyDefense,
-    resolveThreat,
+    role,
+    checkPermission,
+    user,
+    threats,
     systemLogs,
-    activeDefenses,
+    isSimulationActive,
     systemStatus,
-    user
+    protectedSystem,
+    globalRiskScore,
+    activeDefenses,
+    stopSimulation,
+    triggerSimulation,
+    resolveThreat,
+    applyDefense
   } = useStore();
 
   const statusColors = {
@@ -138,6 +140,20 @@ export default function Dashboard() {
             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">
               Protecting: <span className="text-cyan-500">{protectedSystem}</span>
             </p>
+            <div className="flex items-center gap-2 pt-2">
+              <span className={`px-2 py-0.5 rounded text-[8px] font-black tracking-widest border ${
+                role === 'ADMIN' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 
+                role === 'ANALYST' ? 'bg-purple-500/10 border-purple-500 text-purple-400' : 
+                'bg-slate-800 border-slate-700 text-slate-500'
+              }`}>
+                {role} ACCESS
+              </span>
+              {role === 'ADMIN' && (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 border border-red-500/40 rounded text-[8px] font-black text-red-500 tracking-widest animate-pulse">
+                  <Lock size={8} /> ADMIN MODE ACTIVE
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
@@ -145,7 +161,8 @@ export default function Dashboard() {
           {isSimulationActive ? (
             <button 
               onClick={stopSimulation}
-              className="tech-button border-red-500/50 hover:bg-red-500/10 text-red-500 !py-2 !px-4"
+              disabled={!checkPermission('MANAGE_SIMULATION')}
+              className="tech-button border-red-500/50 hover:bg-red-500/10 text-red-500 !py-2 !px-4 disabled:opacity-30 disabled:grayscale"
             >
               <Square size={14} className="mr-2" /> STOP SIMULATION
             </button>
@@ -155,7 +172,8 @@ export default function Dashboard() {
                 <button 
                   key={key}
                   onClick={() => triggerSimulation(key)}
-                  className="px-4 py-2 bg-slate-800/80 hover:bg-cyan-500 hover:text-slate-950 rounded-lg text-[10px] font-black tracking-widest transition-all uppercase"
+                  disabled={!checkPermission('MANAGE_SIMULATION')}
+                  className="px-4 py-2 bg-slate-800/80 hover:bg-cyan-500 hover:text-slate-950 rounded-lg text-[10px] font-black tracking-widest transition-all uppercase disabled:opacity-30 disabled:hover:bg-slate-800 disabled:hover:text-slate-500"
                 >
                   {key.split('_')[0]}
                 </button>
@@ -270,20 +288,21 @@ export default function Dashboard() {
                       {criticalThreats[slideIndex]?.description}
                     </p>
 
-                    <div className="flex gap-4 pt-2">
-                       <button 
-                         onClick={() => resolveThreat(criticalThreats[slideIndex].id)}
-                         className="px-6 py-2.5 bg-red-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                     <div className="flex gap-4 pt-2">
+                        <button 
+                          onClick={() => resolveThreat(criticalThreats[slideIndex].id)}
+                          disabled={!checkPermission('RESOLVE_THREAT')}
+                          className="px-6 py-2.5 bg-red-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] disabled:opacity-50 disabled:grayscale"
+                        >
+                          NEUTRALIZE
+                        </button>
+                        <button 
+                         onClick={() => handleExplain(criticalThreats[slideIndex])}
+                         className="px-6 py-2.5 bg-slate-900 border border-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:border-cyan-500/40 transition-all"
                        >
-                         NEUTRALIZE
-                       </button>
-                       <button 
-                        onClick={() => handleExplain(criticalThreats[slideIndex])}
-                        className="px-6 py-2.5 bg-slate-900 border border-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:border-cyan-500/40 transition-all"
-                      >
-                         AUDIT PAYLOAD
-                       </button>
-                    </div>
+                          AUDIT PAYLOAD
+                        </button>
+                     </div>
                   </motion.div>
                 ) : (
                   <motion.div 
@@ -424,11 +443,12 @@ export default function Dashboard() {
             <div className="p-4 grid grid-cols-2 gap-2">
               <button 
                 onClick={() => applyDefense('FIREWALL')}
+                disabled={!checkPermission('APPLY_DEFENSE')}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('FIREWALL') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                }`}
+                } disabled:opacity-30 disabled:grayscale`}
               >
                 <Lock size={14} className={`${activeDefenses.includes('FIREWALL') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Enable Firewall</span>
@@ -437,11 +457,12 @@ export default function Dashboard() {
               
               <button 
                 onClick={() => applyDefense('2FA')}
+                disabled={!checkPermission('APPLY_DEFENSE')}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('2FA') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                }`}
+                } disabled:opacity-30 disabled:grayscale`}
               >
                 <Radio size={14} className={`${activeDefenses.includes('2FA') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Enforce 2FA</span>
@@ -450,11 +471,12 @@ export default function Dashboard() {
 
               <button 
                 onClick={() => applyDefense('BLOCK_IP')}
+                disabled={!checkPermission('APPLY_DEFENSE')}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('BLOCK_IP') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                }`}
+                } disabled:opacity-30 disabled:grayscale`}
               >
                 <ShieldAlert size={14} className={`${activeDefenses.includes('BLOCK_IP') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Block Identity</span>
@@ -463,11 +485,12 @@ export default function Dashboard() {
 
               <button 
                 onClick={() => applyDefense('RATE_LIMIT')}
+                disabled={!checkPermission('APPLY_DEFENSE')}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('RATE_LIMIT') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                }`}
+                } disabled:opacity-30 disabled:grayscale`}
               >
                 <Activity size={14} className={`${activeDefenses.includes('RATE_LIMIT') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Rate Limiting</span>

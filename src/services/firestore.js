@@ -1,5 +1,6 @@
 // Firebase + Firestore Service
 import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import {
   getFirestore, collection, addDoc, getDocs,
   query, orderBy, limit, onSnapshot, serverTimestamp,
@@ -16,7 +17,7 @@ const firebaseConfig = {
   appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-let app, db, storage;
+let app, db, storage, auth, googleProvider;
 let firebaseReady = false;
 
 try {
@@ -24,10 +25,24 @@ try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     storage = getStorage(app);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
     firebaseReady = true;
   }
 } catch (e) {
   console.warn('Firebase not configured — using local mode');
+}
+
+// Auth Functions
+export async function signInWithGoogle() {
+  if (!firebaseReady) throw new Error('Firebase not initialized');
+  const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
+}
+
+export async function logoutUser() {
+  if (!firebaseReady) return;
+  await signOut(auth);
 }
 
 // Threats

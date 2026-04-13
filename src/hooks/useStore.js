@@ -35,11 +35,24 @@ export const useStore = create((set, get) => ({
   error: null,
   isAuthenticated: !!localStorage.getItem('sentinel_auth'),
   user: JSON.parse(localStorage.getItem('sentinel_user') || 'null'),
+  role: localStorage.getItem('sentinel_role') || 'VIEWER', // 'ADMIN' | 'ANALYST' | 'VIEWER'
   isScanning: false,
   scanProgress: 0,
   scanResult: null,
   sidebarOpen: true,
-  userRole: 'senior',
+
+  // RBAC HELPER
+  checkPermission: (action) => {
+    const { role } = get();
+    const permissions = {
+      'RESOLVE_THREAT': ['ADMIN'],
+      'APPLY_DEFENSE': ['ADMIN'],
+      'MANAGE_SIMULATION': ['ADMIN'],
+      'RUN_SCAN': ['ADMIN', 'ANALYST'],
+      'VIEW_DASHBOARD': ['ADMIN', 'ANALYST', 'VIEWER']
+    };
+    return permissions[action]?.includes(role) || false;
+  },
 
   // GLOBAL STATUS
   systemStatus: 'SECURE', // 'SECURE' | 'UNDER_ATTACK' | 'CRITICAL'
@@ -62,7 +75,7 @@ export const useStore = create((set, get) => ({
   addLog: (message, type = 'neutral') => set(state => ({
     systemLogs: [{
       id: Date.now() + Math.random(),
-      message,
+      message: `[${state.role}] ${message}`,
       timestamp: new Date().toISOString(),
       type
     }, ...state.systemLogs].slice(0, state.MAX_LOGS)
@@ -103,6 +116,11 @@ export const useStore = create((set, get) => ({
 
   // DEFENSE ACTIONS
   applyDefense: (actionType) => {
+    if (!get().checkPermission('APPLY_DEFENSE')) {
+      get().addLog(`ACCESS DENIED: Role ${get().role} cannot modify defenses.`, 'alert');
+      return;
+    }
+
     const { threats, globalRiskScore, addLog, activeDefenses } = get();
     
     if (activeDefenses.includes(actionType)) {
@@ -164,18 +182,21 @@ export const useStore = create((set, get) => ({
     });
   },
 
+  // INTERNAL STATE
+  _initialized: false,
+
   // ACTIONS
   initialize: async () => {
-    const { addLog, MAX_LOGS, MAX_THREATS } = get();
+    const { addLog, MAX_LOGS, MAX_THREATS, _initialized } = get();
+    if (_initialized) return;
+
     try {
-      set({ loading: true, error: null });
+      set({ loading: true, error: null, _initialized: true });
       
-      // 1. Authenticate
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) set({ user, isAuthenticated: true });
-      } catch (e) {
-        console.warn('Auth check failed');
+      // 1. Authenticate (Check internal storage first)
+      const storedUser = localStorage.getItem('sentinel_user');
+      if (storedUser) {
+        set({ user: JSON.parse(storedUser), isAuthenticated: true });
       }
 
       // 2. Database Sync
@@ -200,6 +221,7 @@ export const useStore = create((set, get) => ({
           set({ threats });
         }
       } catch (dbError) {
+        console.error('Initial DB Sync Failed:', dbError);
         set({ threats: MOCK_THREATS.slice(0, MAX_THREATS) });
       }
 
@@ -233,9 +255,10 @@ export const useStore = create((set, get) => ({
       });
       set({ simulator });
 
-      // 4. Real-time Subscription
+      // 4. Real-time Subscription (Ensure unique channel and correct sequence)
+      const channelId = `sentinel-realtime-${Math.random().toString(36).substr(2, 9)}`;
       const channel = supabase
-        .channel('schema-db-changes')
+        .channel(channelId)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'threats' }, (payload) => {
           const { eventType, new: newRow, old: oldRow } = payload;
           const currentThreats = get().threats;
@@ -251,17 +274,39 @@ export const useStore = create((set, get) => ({
               stats: { ...get().stats, totalIntercepts: Math.max(0, get().stats.totalIntercepts - 1) } 
             });
           }
-        })
-        .subscribe();
+        });
+
+      channel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to threats realtime channel');
+        }
+      });
 
       set({ loading: false });
-      return () => supabase.removeChannel(channel);
+      
+      // Store channel for cleanup
+      set({ realtimeChannel: channel });
+
     } catch (globalError) {
+      console.error('Initialization Failed:', globalError);
       set({ loading: false, error: globalError.message });
     }
   },
 
+  cleanup: () => {
+    const { realtimeChannel } = get();
+    if (realtimeChannel) {
+      supabase.removeChannel(realtimeChannel);
+      set({ realtimeChannel: null, _initialized: false });
+    }
+  },
+
   resolveThreat: (threatId) => {
+    if (!get().checkPermission('RESOLVE_THREAT')) {
+      get().addLog(`ACCESS DENIED: Role ${get().role} cannot neutralize threats.`, 'alert');
+      return;
+    }
+
     const { threats, globalRiskScore, isSimulationActive, addLog, MAX_THREATS } = get();
     const threat = threats.find(t => t.id === threatId);
     if (!threat) return;
@@ -284,6 +329,11 @@ export const useStore = create((set, get) => ({
   },
 
   triggerSimulation: (profileKey) => {
+    if (!get().checkPermission('MANAGE_SIMULATION')) {
+      get().addLog(`ACCESS DENIED: Role ${get().role} cannot trigger simulations.`, 'alert');
+      return;
+    }
+
     const { simulator } = get();
     if (simulator) {
       set({ isSimulationActive: true, activeSimulationProfile: profileKey });
@@ -292,6 +342,8 @@ export const useStore = create((set, get) => ({
   },
 
   stopSimulation: () => {
+    if (!get().checkPermission('MANAGE_SIMULATION')) return;
+
     const { simulator } = get();
     if (simulator) {
       simulator.stop();
@@ -302,6 +354,12 @@ export const useStore = create((set, get) => ({
   login: (userData) => {
     set({ isBooting: true, bootProgress: 0 });
     
+    // Determine Role based on email
+    let role = 'VIEWER';
+    const email = (userData.email || '').toLowerCase();
+    if (email.includes('admin') || email === 'krishnakant785@gmail.com') role = 'ADMIN';
+    else if (email.includes('analyst') || email.includes('security')) role = 'ANALYST';
+
     // Simulate boot sequence
     const interval = setInterval(() => {
       set(s => {
@@ -309,22 +367,29 @@ export const useStore = create((set, get) => ({
           clearInterval(interval);
           localStorage.setItem('sentinel_auth', 'true');
           localStorage.setItem('sentinel_user', JSON.stringify(userData));
-          return { isBooting: false, isAuthenticated: true, user: userData };
+          localStorage.setItem('sentinel_role', role);
+          return { isBooting: false, isAuthenticated: true, user: userData, role };
         }
         return { bootProgress: s.bootProgress + 5 };
       });
-    }, 100);
+    }, 50);
   },
   
   logout: () => {
     localStorage.removeItem('sentinel_auth');
     localStorage.removeItem('sentinel_user');
-    set({ isAuthenticated: false, user: null });
+    localStorage.removeItem('sentinel_role');
+    set({ isAuthenticated: false, user: null, role: 'VIEWER' });
   },
 
-  startScan: () => set({ isScanning: true, scanProgress: 0, scanResult: null }),
+  startScan: () => {
+    if (!get().checkPermission('RUN_SCAN')) {
+      get().addLog(`ACCESS DENIED: Role ${get().role} cannot initiate neural scans.`, 'alert');
+      return;
+    }
+    set({ isScanning: true, scanProgress: 0, scanResult: null });
+  },
   setScanProgress: (p) => set({ scanProgress: p }),
   finishScan: (result) => set({ isScanning: false, scanProgress: 100, scanResult: result }),
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
-  toggleRole: () => set(s => ({ userRole: s.userRole === 'senior' ? 'senior' : 'junior' })),
 }));

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Shield, Lock, Globe, ArrowRight, Radio, Scan, Zap } from 'lucide-react';
 import { useStore } from '../hooks/useStore';
 import toast from 'react-hot-toast';
+import { signInWithGoogle } from '../services/firestore';
 
 export default function Login() {
   const { login, isBooting, bootProgress } = useStore();
@@ -88,10 +89,23 @@ export default function Login() {
   }
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    // Trigger the boot sequence in the store
-    login({ name: 'Operative X', email: 'verified@sentinel-zero.ai', photoURL: null, isGuest: false });
-    setLoading(false);
+    try {
+      setLoading(true);
+      const user = await signInWithGoogle();
+      const userData = {
+        name: user.displayName || 'Operative',
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid,
+        isGuest: false
+      };
+      login(userData);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Auth Synchronization Failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGuestLogin = () => {

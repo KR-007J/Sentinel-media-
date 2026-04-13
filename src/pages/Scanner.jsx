@@ -28,7 +28,7 @@ const SCAN_STAGES = [
 ];
 
 export default function Scanner() {
-  const { isScanning, startScan, finishScan, addLog, addThreat } = useStore();
+  const { isScanning, startScan, finishScan, addLog, addThreat, checkPermission } = useStore();
   const [step, setStep] = useState('upload');
   const [file, setFile] = useState(null);
   const [targetInput, setTargetInput] = useState('');
@@ -39,19 +39,27 @@ export default function Scanner() {
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
 
+  // RBAC Check
+  const canScan = checkPermission('START_SCAN');
+
   const onDrop = useCallback((files) => {
+    if (!canScan) return;
     if (files[0]) { 
       setFile(files[0]); 
       toast.success('Binary loaded into secure buffer'); 
     }
-  }, []);
+  }, [canScan]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop, accept: { 'application/*': [], 'text/*': [] }, maxFiles: 1,
-    disabled: isScanning
+    disabled: isScanning || !canScan
   });
 
   const runScan = async () => {
+    if (!canScan) {
+      toast.error('ACCESS DENIED: Insufficient permissions for Audit execution');
+      return;
+    }
     if (isScanning || (!file && !targetInput)) return;
     
     startScan();
@@ -233,10 +241,21 @@ export default function Scanner() {
                   </div>
                 )}
 
-                <button onClick={runScan} disabled={isScanning || (!file && !targetInput)}
-                  className={`tech-button w-full !py-6 !bg-cyan-500 !text-slate-950 hover:!bg-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.3)] border-none transition-all ${isScanning ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}>
+                <button 
+                  onClick={runScan} 
+                  disabled={isScanning || (!file && !targetInput) || !canScan}
+                  className={`tech-button w-full !py-6 transition-all ${
+                    !canScan 
+                      ? '!bg-slate-800 !text-slate-500 cursor-not-allowed opacity-50 border-slate-700' 
+                      : '!bg-cyan-500 !text-slate-950 hover:!bg-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.3)] border-none'
+                  } ${isScanning ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                >
                   <ScanLine size={24} className={`mr-3 ${isScanning ? 'animate-spin' : ''}`} /> 
-                  <span>{isScanning ? 'SENSOR ARRAY LOCK - SCANNING...' : 'COMMENCE ZERO TRUST AUDIT'}</span>
+                  <span>
+                    {isScanning ? 'SENSOR ARRAY LOCK - SCANNING...' : 
+                     !canScan ? 'RESTRICTED: ANALYST CLEARANCE REQUIRED' : 
+                     'COMMENCE ZERO TRUST AUDIT'}
+                  </span>
                 </button>
               </motion.div>
             )}

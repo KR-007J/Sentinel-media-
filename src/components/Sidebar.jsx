@@ -19,8 +19,8 @@ const NAV = [
 ];
 
 export default function Sidebar() {
-  const { sidebarOpen, toggleSidebar, threats, logout } = useStore();
-  const highThreats = threats.filter(t => t.risk === 'high').length;
+  const { sidebarOpen, toggleSidebar, threats, logout, user, role } = useStore();
+  const highThreats = threats.filter(t => (t.severity || '').toUpperCase() === 'CRITICAL').length;
 
   return (
     <motion.aside
@@ -33,7 +33,7 @@ export default function Sidebar() {
         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 relative bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
           <Shield size={20} className="text-cyan-400" />
           {highThreats > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-4.5 rounded-full bg-purple-500 flex items-center justify-center text-[10px] font-black text-white border-2 border-black px-1">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-4.5 rounded-full bg-red-500 flex items-center justify-center text-[10px] font-black text-white border-2 border-black px-1">
               {highThreats}
             </span>
           )}
@@ -92,38 +92,40 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* System Status HUD */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} 
-            animate={{ opacity: 1, scale: 1 }} 
-            className="mx-3 mb-4 p-4 glass-card border-primary/20"
-          >
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="pulse-indicator" />
-              <span className="telemetry-label text-primary">System Integrity</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[9px] uppercase tracking-tighter">
-                <span className="opacity-50 font-mono">Core Efficiency</span>
-                <span className="text-primary font-mono">98.4%</span>
+      {/* User Section */}
+      <div className="px-3 mb-4 space-y-4">
+        <AnimatePresence>
+          {sidebarOpen && user && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg overflow-hidden border border-cyan-500/30">
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-slate-800 flex items-center justify-center text-cyan-500 font-bold">
+                      {user.name?.[0] || 'O'}
+                    </div>
+                  )}
+                </div>
+                <div className="overflow-hidden">
+                  <p className="text-[10px] font-black text-white truncate uppercase tracking-tighter">{user.name}</p>
+                  <p className={`text-[8px] font-black uppercase tracking-widest ${
+                    role === 'ADMIN' ? 'text-cyan-400' : 
+                    role === 'ANALYST' ? 'text-purple-400' : 
+                    'text-slate-500'
+                  }`}>
+                    {role} Level
+                  </p>
+                </div>
               </div>
-              <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: '98.4%' }}
-                  transition={{ duration: 1.5, delay: 0.5 }}
-                  className="h-full bg-gradient-to-r from-primary to-secondary"
-                />
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Actions */}
-      <div className="px-3 pb-6 space-y-2">
         <button 
           onClick={logout}
           className={clsx(

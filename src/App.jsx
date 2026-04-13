@@ -12,14 +12,12 @@ import Layout from './components/Layout';
 import { useStore } from './hooks/useStore';
 
 export default function App() {
-  const { isAuthenticated, initialize, loading, error } = useStore();
+  const { isAuthenticated, initialize, cleanup, loading, error } = useStore();
 
   useEffect(() => {
-    const unsub = initialize();
-    return () => {
-      if (typeof unsub === 'function') unsub();
-    };
-  }, [initialize]);
+    initialize();
+    return () => cleanup();
+  }, [initialize, cleanup]);
 
   if (loading) {
     return (
