@@ -41,6 +41,11 @@ export const useStore = create((set, get) => ({
   sidebarOpen: true,
   userRole: 'senior',
 
+  // GLOBAL STATUS
+  systemStatus: 'SECURE', // 'SECURE' | 'UNDER_ATTACK' | 'CRITICAL'
+  isBooting: false,
+  bootProgress: 0,
+
   // STATS
   stats: {
     totalIntercepts: 0,
@@ -83,8 +88,15 @@ export const useStore = create((set, get) => ({
     }
 
     const updatedThreats = [threat, ...state.threats].slice(0, state.MAX_THREATS);
+    
+    // Recalculate System Status
+    let newStatus = 'SECURE';
+    if (updatedThreats.length > 5 || state.globalRiskScore > 60) newStatus = 'CRITICAL';
+    else if (updatedThreats.length > 0 || state.isSimulationActive) newStatus = 'UNDER_ATTACK';
+
     return {
       threats: updatedThreats,
+      systemStatus: newStatus,
       stats: { ...state.stats, totalIntercepts: state.stats.totalIntercepts + 1 }
     };
   }),
@@ -250,16 +262,25 @@ export const useStore = create((set, get) => ({
   },
 
   resolveThreat: (threatId) => {
-    const { threats, addLog, MAX_THREATS } = get();
+    const { threats, globalRiskScore, isSimulationActive, addLog, MAX_THREATS } = get();
     const threat = threats.find(t => t.id === threatId);
     if (!threat) return;
 
     addLog(`RESOLVED: ${threat.type} neutralized by human override.`, 'success');
     const newThreats = threats.filter(t => t.id !== threatId);
-    set(state => ({ 
+    
+    // Recalculate System Status and Score
+    const newScore = Math.max(0, globalRiskScore - (threat.risk_score || 10) / 2);
+    
+    let newStatus = 'SECURE';
+    if (newThreats.length > 5 || newScore > 60) newStatus = 'CRITICAL';
+    else if (newThreats.length > 0 || isSimulationActive) newStatus = 'UNDER_ATTACK';
+
+    set({ 
       threats: newThreats.slice(0, MAX_THREATS),
-      globalRiskScore: Math.max(5, state.globalRiskScore - (threat.risk_score || 10) / 2)
-    }));
+      globalRiskScore: newScore,
+      systemStatus: newStatus
+    });
   },
 
   triggerSimulation: (profileKey) => {
@@ -279,9 +300,20 @@ export const useStore = create((set, get) => ({
   },
 
   login: (userData) => {
-    localStorage.setItem('sentinel_auth', 'true');
-    localStorage.setItem('sentinel_user', JSON.stringify(userData));
-    set({ isAuthenticated: true, user: userData });
+    set({ isBooting: true, bootProgress: 0 });
+    
+    // Simulate boot sequence
+    const interval = setInterval(() => {
+      set(s => {
+        if (s.bootProgress >= 100) {
+          clearInterval(interval);
+          localStorage.setItem('sentinel_auth', 'true');
+          localStorage.setItem('sentinel_user', JSON.stringify(userData));
+          return { isBooting: false, isAuthenticated: true, user: userData };
+        }
+        return { bootProgress: s.bootProgress + 5 };
+      });
+    }, 100);
   },
   
   logout: () => {

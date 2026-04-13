@@ -23,8 +23,21 @@ export default function Dashboard() {
     resolveThreat,
     systemLogs,
     activeDefenses,
+    systemStatus,
     user
   } = useStore();
+
+  const statusColors = {
+    'SECURE': 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5',
+    'UNDER_ATTACK': 'text-orange-400 border-orange-500/20 bg-orange-500/5 shadow-[0_0_15px_rgba(249,115,22,0.1)]',
+    'CRITICAL': 'text-red-500 border-red-500/30 bg-red-500/10 shadow-[0_0_30px_rgba(239,68,68,0.2)]'
+  };
+
+  const statusIcons = {
+    'SECURE': <ShieldCheck size={14} />,
+    'UNDER_ATTACK': <Activity size={14} className="animate-pulse" />,
+    'CRITICAL': <ShieldAlert size={14} className="animate-bounce" />
+  };
 
   const [metrics, setMetrics] = useState({ cpu: 42, network: 120, memory: 68 });
   const [slideIndex, setSlideIndex] = useState(0);
@@ -100,19 +113,30 @@ export default function Dashboard() {
       
       {/* SOC HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isSimulationActive ? 'bg-red-500 animate-ping shadow-[0_0_15px_red]' : threats.length > 0 ? 'bg-yellow-500 shadow-[0_0_10px_#eab308]' : 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]'}`} />
-            <h2 className="text-4xl font-black tracking-tighter font-tech uppercase grad-text">
-              {threats.length === 0 ? 'SYSTEM SECURED' : isSimulationActive ? 'THREAT SIMULATION ACTIVE' : 'SENTINEL PRIME'}
-            </h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className={`status-tag transition-all duration-500 uppercase tracking-[0.3em] font-black ${statusColors[systemStatus]}`}>
+               {statusIcons[systemStatus]}
+               SYS_STATUS: {systemStatus}
+            </div>
+            {threats.length === 0 && !isSimulationActive && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] flex items-center gap-2"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                System Fully Secured
+              </motion.div>
+            )}
           </div>
-          <div className="flex flex-col gap-1">
-            <p className="telemetry-label !text-cyan-400/60 flex items-center gap-2">
-              <Cpu size={12} /> PROTECTING: <span className="text-white bg-white/10 px-2 py-0.5 rounded italic border border-white/5">{protectedSystem}</span>
-            </p>
-            <p className="telemetry-label !text-cyan-400/40 flex items-center gap-2 text-[10px]">
-              OPERATOR: {user?.email || 'ANONYMOUS'} • NODES: 1492 • LATENCY: {isSimulationActive ? '184MS' : '24MS'}
+          
+          <div className="space-y-1">
+            <h2 className="text-4xl font-black tracking-tighter font-tech uppercase grad-text">
+               {isSimulationActive ? 'THREAT SIMULATION ACTIVE' : 'SENTINEL PRIME COMMAND'}
+            </h2>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">
+              Protecting: <span className="text-cyan-500">{protectedSystem}</span>
             </p>
           </div>
         </div>

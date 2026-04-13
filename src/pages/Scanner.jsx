@@ -290,6 +290,33 @@ export default function Scanner() {
                   </button>
                 </div>
 
+                {/* FINAL AUDIT REPORT SUMMARY */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="glass-card p-6 border-slate-800 bg-slate-950/50">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Vulnerabilities</p>
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-4xl font-black text-white">{findings.flags.length}</span>
+                       <span className="text-[10px] text-red-500 font-bold uppercase">Detected</span>
+                    </div>
+                  </div>
+                  <div className="glass-card p-6 border-slate-800 bg-slate-950/50">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Threat Classification</p>
+                    <div className="flex items-center gap-2">
+                       <span className={`text-xl font-black uppercase ${findings.severity === 'SECURE' ? 'text-cyan-400' : 'text-red-500'}`}>
+                         {findings.severity}
+                       </span>
+                    </div>
+                  </div>
+                  <div className="glass-card p-6 border-slate-800 bg-slate-950/50">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">System Posture</p>
+                    <div className="flex items-center gap-2">
+                       <span className={`text-xl font-black uppercase ${findings.severity === 'SECURE' ? 'text-emerald-400' : 'text-orange-500'}`}>
+                         {findings.severity === 'SECURE' ? 'OPTIMIZED' : 'COMPROMISED'}
+                       </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className={`glass-card p-8 relative overflow-hidden border ${
                   findings.severity === 'SECURE' ? 'border-cyan-500/20 bg-cyan-500/5' : 'border-red-500/20 bg-red-500/5'
                 }`}>

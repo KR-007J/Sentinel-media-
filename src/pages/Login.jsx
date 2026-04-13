@@ -5,27 +5,97 @@ import { useStore } from '../hooks/useStore';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { login } = useStore();
+  const { login, isBooting, bootProgress } = useStore();
   const [loading, setLoading] = useState(false);
+
+  const BOOT_LOGS = [
+    "INITIALIZING SENTINEL KERNEL v3.0.4...",
+    "ESTABLISHING SECURE SUPABASE TUNNEL...",
+    "LOADING BIOMETRIC DNA SEQUENCES...",
+    "SYNCING THREAT INTELLIGENCE NODES...",
+    "CALIBRATING NEURAL DECISION ENGINE...",
+    "ENFORCING ZERO TRUST POLICIES...",
+    "HANDSHAKE COMPLETE. REDIRECTING TO CORE..."
+  ];
+
+  const currentLogIdx = Math.min(BOOT_LOGS.length - 1, Math.floor((bootProgress / 100) * BOOT_LOGS.length));
+
+  if (isBooting) {
+    return (
+      <div className="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center p-8 font-tech overflow-hidden">
+        {/* Cinematic Matrix Grid Background */}
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+          style={{ backgroundImage: 'linear-gradient(rgba(6,182,212,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        
+        <div className="w-full max-w-2xl relative">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-8 space-y-2"
+          >
+            <div className="flex justify-between items-end mb-4">
+              <div className="space-y-1">
+                <h2 className="text-cyan-500 text-xs font-black tracking-[0.2em] uppercase italic">System Boot Sequence</h2>
+                <div className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Kernel: SZ-CORE-v3.0.4-LATEST</div>
+              </div>
+              <div className="text-3xl font-black text-white italic tracking-tighter">{bootProgress}%</div>
+            </div>
+
+            {/* Tactical Progress Bar */}
+            <div className="h-2 w-full bg-slate-900 rounded-full border border-white/5 overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 relative"
+                initial={{ width: 0 }}
+                animate={{ width: `${bootProgress}%` }}
+              >
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:20px_20px] animate-shimmer" />
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Scrolling Terminal Logs */}
+          <div className="bg-slate-950/80 border border-white/5 p-6 rounded-lg backdrop-blur-md h-40 overflow-hidden relative">
+             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-transparent to-slate-950/80 pointer-events-none z-10" />
+             <div className="space-y-2">
+               {BOOT_LOGS.slice(0, currentLogIdx + 1).map((log, i) => (
+                 <motion.div 
+                   key={i}
+                   initial={{ opacity: 0, x: -10 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   className="flex items-center gap-3 text-[10px] font-mono"
+                 >
+                   <span className="text-cyan-500 font-black shrink-0">[OK]</span>
+                   <span className="text-slate-300 uppercase tracking-wider">{log}</span>
+                 </motion.div>
+               ))}
+               <motion.div 
+                 animate={{ opacity: [0, 1] }} 
+                 transition={{ repeat: Infinity, duration: 0.8 }}
+                 className="w-2 h-4 bg-cyan-500/50 inline-block ml-1"
+               />
+             </div>
+          </div>
+        </div>
+
+        {/* Global Security Disclaimer */}
+        <div className="absolute bottom-10 text-center opacity-30">
+          <p className="text-[8px] text-slate-500 uppercase tracking-[0.4em] font-black">
+            Classified Environment // Unauthorized Access leads to neural purge.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    // Simulate Tactical Auth Sync
-    setTimeout(() => {
-      login({ name: 'Operative X', email: 'verified@sentinel-zero.ai', photoURL: null, isGuest: false });
-      toast.success('NEURAL SYNC COMPLETE', {
-        style: { background: '#020617', color: '#06b6d4', border: '1px solid #06b6d433' }
-      });
-      setLoading(false);
-    }, 1500);
+    // Trigger the boot sequence in the store
+    login({ name: 'Operative X', email: 'verified@sentinel-zero.ai', photoURL: null, isGuest: false });
+    setLoading(false);
   };
 
   const handleGuestLogin = () => {
     login({ name: 'Guest Operative', email: 'guest@sentinel-zero.ai', photoURL: null, isGuest: true });
-    toast('GUEST CLEARANCE GRANTED', { 
-      icon: '👤',
-      style: { background: '#020617', color: '#a855f7', border: '1px solid #a855f733' }
-    });
   };
 
   return (
