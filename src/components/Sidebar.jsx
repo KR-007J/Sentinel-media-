@@ -8,6 +8,7 @@ import {
 import { useStore } from '../hooks/useStore';
 import clsx from 'clsx';
 
+
 const NAV = [
   { to: '/dashboard',   icon: LayoutDashboard, label: 'Dashboard',   badge: null },
   { to: '/scanner',     icon: ScanLine,         label: 'Scanner',     badge: 'AI' },
@@ -29,10 +30,10 @@ export default function Sidebar() {
     >
       {/* HUD Header */}
       <div className="flex items-center gap-3 px-5 py-6 border-b border-white/10">
-        <div className="w-10 h-10 rounded-sm flex items-center justify-center flex-shrink-0 relative bg-primary/10 border border-primary/30 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
-          <Shield size={20} className="text-primary" />
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 relative bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
+          <Shield size={20} className="text-cyan-400" />
           {highThreats > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-4.5 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-white border-2 border-black px-1">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-4.5 rounded-full bg-purple-500 flex items-center justify-center text-[10px] font-black text-white border-2 border-black px-1">
               {highThreats}
             </span>
           )}
@@ -40,8 +41,8 @@ export default function Sidebar() {
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="overflow-hidden">
-              <h2 className="font-bold text-white text-lg tracking-wider leading-none font-tech uppercase">SENTINEL</h2>
-              <p className="telemetry-label text-primary mt-1">NEXUS OPERATING SYSTEM</p>
+              <h2 className="font-black text-white text-lg tracking-wider leading-none font-tech uppercase italic">SENTINEL<span className="text-cyan-500">ZERO</span></h2>
+              <p className="text-[8px] font-black text-cyan-500 mt-1 uppercase tracking-[0.2em] italic">Tactical OS v3.0</p>
             </motion.div>
           )}
         </AnimatePresence>

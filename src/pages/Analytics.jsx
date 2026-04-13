@@ -1,218 +1,226 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Target, Award, Zap, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Award, Zap, Clock, ShieldAlert, Globe, Server, Activity } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { ANALYTICS_DATA } from '../data/mockData';
-import { useStore } from '../hooks/useStore';
 
-const COLORS = ['#1a73e8', '#8ab4f8', '#4285f4', '#c6dafc', '#5f6368'];
+const COLORS = ['#06b6d4', '#8b5cf6', '#3b82f6', '#1e293b', '#64748b'];
 
 const CT = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#2d2e31] border border-[#3c4043] px-4 py-3 text-xs font-mono rounded-2xl shadow-2xl">
-      <p className="text-[#9aa0a6] mb-2 font-black uppercase tracking-widest">{label}</p>
-      {payload.map(p => <p key={p.name} style={{ color: p.color }} className="flex justify-between gap-4"><span>{p.name}:</span> <b>{p.value}</b></p>)}
+    <div className="glass-card px-4 py-3 text-[10px] font-mono border-slate-700 bg-slate-900/95 shadow-2xl">
+      <p className="text-slate-500 mb-2 font-black uppercase tracking-widest">{label}</p>
+      {payload.map(p => (
+        <p key={p.name} style={{ color: p.color }} className="flex justify-between gap-6 py-1">
+          <span className="uppercase">{p.name}:</span> 
+          <span className="font-bold">{p.value}</span>
+        </p>
+      ))}
     </div>
   );
 };
 
-function MetricCard({ title, value, change, up, sub, delay }) {
+function MetricCard({ title, value, change, up, sub, delay, icon: Icon }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
-      className="bg-[#2d2e31] border border-[#3c4043] p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
-      <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+      className="glass-card p-6 border-slate-800 bg-slate-900/40 relative overflow-hidden group">
       <div className="flex items-start justify-between mb-4 relative z-10">
-        <p className="text-[10px] font-black text-[#5f6368] tracking-widest uppercase">{title}</p>
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black font-mono border ${up ? 'text-[#f28b82] border-[#ea4335]/20 bg-[#ea4335]/5' : 'text-[#8ab4f8] border-[#1a73e8]/20 bg-[#1a73e8]/5'}`}>
-          {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+        <div className="w-10 h-10 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center group-hover:border-cyan-500/30 transition-all">
+          <Icon size={18} className="text-cyan-400" />
+        </div>
+        <div className={`flex items-center gap-1.5 px-2 py-1 rounded text-[9px] font-black font-tech border ${up ? 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5' : 'text-purple-400 border-purple-500/20 bg-purple-500/5'}`}>
+          {up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
           {change}
         </div>
       </div>
-      <p className="text-4xl font-bold text-white tracking-tighter relative z-10">{value}</p>
-      {sub && <p className="text-[10px] text-[#5f6368] mt-2 font-black uppercase tracking-[0.2em] relative z-10">{sub}</p>}
+      <p className="text-[10px] font-black text-slate-500 tracking-widest uppercase mb-1">{title}</p>
+      <p className="text-3xl font-black text-white tracking-tighter relative z-10 font-tech">{value}</p>
+      {sub && <p className="text-[9px] text-slate-600 mt-2 font-bold uppercase tracking-[0.2em] relative z-10">{sub}</p>}
     </motion.div>
   );
 }
 
 export default function Analytics() {
-  const { threats } = useStore();
   const [period, setPeriod] = useState('weekly');
+  const [dbThreats, setDbThreats] = useState([]);
 
-  const takedownRate = Math.round((287 / 312) * 100);
-  const totalViews = threats.reduce((s, t) => s + (t.views || 0), 0);
+  useEffect(() => {
+    async function fetchThreats() {
+      const { data } = await supabase.from('threats').select('*').order('created_at', { ascending: false }).limit(5);
+      if (data) setDbThreats(data);
+    }
+    fetchThreats();
+  }, []);
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Prophetic Risk Forecaster */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-[#202124] border border-[#1a73e8]/30 p-10 rounded-[3rem] relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1a73e8]/5 blur-[120px] -mr-64 -mt-64" />
-        <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
-          <div className="w-20 h-20 rounded-[1.5rem] bg-[#1a73e8] shadow-2xl shadow-[#1a73e8]/30 flex items-center justify-center flex-shrink-0">
-            <Zap size={36} className="text-white animate-pulse" />
+      {/* HUD Header */}
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+        className="glass-card p-1 bg-slate-900/60 border-slate-800 overflow-hidden relative">
+        <div className="flex flex-col md:flex-row items-center gap-8 p-10 bg-gradient-to-br from-cyan-500/[0.03] to-transparent">
+          <div className="w-24 h-24 rounded-2xl bg-cyan-500 shadow-[0_0_40px_rgba(6,182,212,0.3)] flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+            <Zap size={40} className="text-slate-950 z-10" />
+            <motion.div animate={{ y: [-100, 100] }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0 bg-white/20 w-full h-1/2" />
           </div>
-          <div className="flex-1 space-y-3">
-            <div className="flex items-center gap-4">
-              <span className="px-3 py-1.5 rounded-full bg-[#1a73e8]/10 border border-[#1a73e8]/20 text-[10px] font-black text-[#8ab4f8] uppercase tracking-widest">Neural Forecaster active</span>
-              <h2 className="text-3xl font-bold text-white tracking-tight">Active Predictive Intelligence</h2>
-            </div>
-            <p className="text-base text-[#5f6368] max-w-2xl leading-relaxed italic font-medium">Proprietary risk modeling engine processing historical interception logs to predict future signal surges within 48-hour windows.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
-             <div className="p-6 rounded-3xl bg-[#2d2e31] border border-[#3c4043] min-w-[140px] shadow-lg">
-                <p className="text-[10px] font-black text-[#8ab4f8] uppercase mb-2 tracking-widest">Next Critical Node</p>
-                <p className="text-2xl font-bold text-white font-mono tracking-tighter">22:00 <small className="text-[10px] font-bold opacity-30 italic">UTC</small></p>
+          <div className="flex-1 space-y-4">
+             <div className="flex items-center gap-3">
+               <span className="h-2 w-2 rounded-full bg-cyan-500 animate-ping" />
+               <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.4em]">TACTICAL COMMAND ACTIVE</span>
              </div>
-             <div className="p-6 rounded-3xl bg-[#ea4335]/10 border border-[#ea4335]/20 min-w-[140px] shadow-lg">
-                <p className="text-[10px] font-black text-[#f28b82] uppercase mb-2 tracking-widest">Predictive Surge</p>
-                <p className="text-2xl font-bold text-[#ea4335] font-mono tracking-tighter">+42% <small className="text-[10px] font-bold opacity-30 italic">High</small></p>
+             <h2 className="text-4xl font-black text-white uppercase font-tech tracking-tight">Predictive Intelligence Dashboard</h2>
+             <p className="text-xs text-slate-500 max-w-2xl leading-relaxed italic font-medium">Neural forecasting engine processing real-time telemetry from 14 global intercept nodes. Prophetic risk weighting active.</p>
+          </div>
+          
+          <div className="flex gap-4">
+             <div className="text-right">
+                <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Global Health</p>
+                <p className="text-2xl font-black text-cyan-400 font-tech">99.98%</p>
+             </div>
+             <div className="w-[1px] h-10 bg-slate-800" />
+             <div className="text-right">
+                <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">System Load</p>
+                <p className="text-2xl font-black text-purple-400 font-tech">12.4ms</p>
              </div>
           </div>
         </div>
       </motion.div>
 
-      {/* KPI Performance Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard title="Detection Magnitude" value="97.3%" change="+1.2%" up={false} sub="Institutional Standard" delay={0} />
-        <MetricCard title="Temporal Latency" value="3.8s" change="-0.4s" up={false} sub="Institutional Lead" delay={0.05} />
-        <MetricCard title="Interception Flow" value={`${takedownRate}%`} change="+3%" up={false} sub="287 Anchored Dossiers" delay={0.1} />
-        <MetricCard title="Mitigation Reach" value={`${(totalViews / 1000).toFixed(0)}K`} change="+22%" up={true} sub="Neutralized Signals" delay={0.15} />
+      {/* KPI Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard title="Detection Magnitude" value="97.3%" change="+1.2%" up={true} sub="Institutional Lead" delay={0} icon={Target} />
+        <MetricCard title="Intercept Latency" value="3.8s" change="-0.4s" up={true} sub="Sub-Atomic Response" delay={0.05} icon={Clock} />
+        <MetricCard title="Node Resilience" value="High" change="No Jitter" up={true} sub="14 Nodes Reporting" delay={0.1} icon={Server} />
+        <MetricCard title="Mitigation Reach" value="1.4M" change="+22%" up={true} sub="Active Neutralization" delay={0.15} icon={ShieldAlert} />
       </div>
 
       <div className="grid lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 p-1.5 bg-[#202124] border border-[#3c4043] rounded-2xl w-fit shadow-inner">
-              {['weekly', 'monthly'].map(p => (
-                <button key={p} onClick={() => setPeriod(p)}
-                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
-                    ${period === p ? 'bg-[#1a73e8] text-white shadow-xl' : 'text-[#5f6368] hover:text-white'}`}>
-                  {p}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-[#2d2e31] border border-[#3c4043] text-[10px] font-black text-[#5f6368] uppercase tracking-widest shadow-md">
-              <Clock size={16} /> Telemetry Sync: ONLINE
-            </div>
-          </div>
-
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
-            className="bg-[#2d2e31] border border-[#3c4043] p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
-            <div className="flex items-center justify-between mb-10">
-               <div>
-                  <p className="text-[10px] font-black text-[#8ab4f8] tracking-[0.3em] uppercase mb-1">Propagation Thresholds</p>
-                  <p className="text-xl font-bold text-white tracking-tight">Temporal Registry Performance</p>
-               </div>
-            </div>
-            <ResponsiveContainer width="100%" height={320}>
-              {period === 'weekly' ? (
-                <AreaChart data={ANALYTICS_DATA.weekly} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-                  <XAxis dataKey="day" tick={{ fill: '#5f6368', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#5f6368', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CT />} />
-                  <Area type="monotone" dataKey="threats" stroke="#ea4335" strokeWidth={3} fillOpacity={0.15} fill="#ea4335" name="Threats" dot={{ fill: '#ea4335', r: 4 }} />
-                  <Area type="monotone" dataKey="suspicious" stroke="#fbbc05" strokeWidth={2} fill="none" strokeDasharray="6 4" name="Suspicious" dot={false} />
-                  <Area type="monotone" dataKey="safe" stroke="#1a73e8" strokeWidth={3} fillOpacity={0.05} fill="#1a73e8" name="Neutral" dot={false} />
-                </AreaChart>
-              ) : (
-                <LineChart data={ANALYTICS_DATA.monthly} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-                  <XAxis dataKey="month" tick={{ fill: '#5f6368', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#5f6368', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CT />} />
-                  <Line type="monotone" dataKey="threats" stroke="#ea4335" strokeWidth={3} dot={{ fill: '#ea4335', r: 5 }} name="Detected" />
-                  <Line type="monotone" dataKey="takedowns" stroke="#1a73e8" strokeWidth={3} dot={{ fill: '#1a73e8', r: 5 }} name="Mitigated" />
-                </LineChart>
-              )}
-            </ResponsiveContainer>
-          </motion.div>
-        </div>
-
-        <div className="lg:col-span-4">
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
-            className="bg-[#2d2e31] border border-[#3c4043] p-10 rounded-[3rem] shadow-2xl h-full flex flex-col">
-            <p className="text-[10px] font-black text-[#8ab4f8] tracking-[0.3em] uppercase mb-1">Intelligence Origins</p>
-            <p className="text-sm font-bold text-white mb-10">Platform Distribution Ledger</p>
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={ANALYTICS_DATA.platforms} cx="50%" cy="50%" innerRadius={70} outerRadius={100}
-                  dataKey="value" paddingAngle={6} stroke="none">
-                  {ANALYTICS_DATA.platforms.map((e, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+        {/* Main Chart */}
+        <div className="lg:col-span-8 flex flex-col gap-8">
+          <div className="glass-card p-10 border-slate-800 bg-slate-900/40 relative">
+             <div className="flex items-center justify-between mb-12">
+                <div>
+                   <p className="text-[9px] font-black text-cyan-500 tracking-[0.3em] uppercase mb-1">Propagation Thresholds</p>
+                   <h3 className="text-xl font-bold text-white uppercase font-tech">Neural Intercept Flow</h3>
+                </div>
+                <div className="flex gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                  {['weekly', 'monthly'].map(p => (
+                    <button key={p} onClick={() => setPeriod(p)}
+                      className={`px-6 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all
+                        ${period === p ? 'bg-cyan-500 text-slate-950' : 'text-slate-500 hover:text-white'}`}>
+                      {p}
+                    </button>
                   ))}
-                </Pie>
-                <Tooltip content={<CT />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="space-y-5 mt-10">
-              {ANALYTICS_DATA.platforms.map((p, i) => (
-                <div key={p.name} className="flex items-center justify-between p-3 rounded-2xl bg-[#202124] border border-white/5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-3 h-3 rounded-full shadow-lg" style={{ background: COLORS[i] }} />
-                    <span className="text-[11px] font-black text-[#9aa0a6] uppercase tracking-widest">{p.name}</span>
-                  </div>
-                  <span className="text-[11px] font-black font-mono text-white">{p.value}%</span>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="bg-[#2d2e31] border border-[#3c4043] p-10 rounded-[3rem] shadow-2xl">
-          <p className="text-[10px] font-black text-[#8ab4f8] tracking-[0.3em] uppercase mb-1">Geospatial hotspots</p>
-          <p className="text-sm font-bold text-white mb-10">Regional Interception Matrix</p>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={ANALYTICS_DATA.regions} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-              <XAxis dataKey="region" tick={{ fill: '#5f6368', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#5f6368', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CT />} />
-              <Bar dataKey="threats" name="Threats" radius={[8, 8, 0, 0]} barSize={36}>
-                {ANALYTICS_DATA.regions.map((_, i) => (
-                  <Cell key={i} fill={i === 0 ? '#ea4335' : i === 1 ? '#fbbc05' : '#1a73e8'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-          className="bg-[#2d2e31] border border-[#3c4043] p-10 rounded-[3rem] shadow-2xl">
-          <p className="text-[10px] font-black text-[#8ab4f8] tracking-[0.3em] uppercase mb-1">Institutional Benchmarks</p>
-          <p className="text-sm font-bold text-white mb-10">Operational Signal Accuracy</p>
-          <div className="space-y-8">
-            {[
-              { label: 'Overall Detection', value: 97.3, icon: Target, color: '#1a73e8' },
-              { label: 'Interception Flow', value: 91.9, icon: Award, color: '#8ab4f8' },
-              { label: 'Signal Stability', value: 98.2, icon: Zap, color: '#fbbc05' },
-            ].map(m => (
-              <div key={m.label}>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#202124] border border-[#3c4043] shadow-inner transition-transform group-hover:scale-110">
-                      <m.icon size={20} style={{ color: m.color }} />
-                    </div>
-                    <div>
-                        <span className="text-[11px] font-black text-white uppercase tracking-tighter">{m.label}</span>
-                        <p className="text-[9px] text-[#5f6368] font-bold uppercase tracking-widest mt-0.5">Verified Intelligence</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-black font-mono text-white tracking-tighter">{m.value}%</span>
-                </div>
-                <div className="h-2 bg-[#202124] rounded-full overflow-hidden p-[2px] border border-[#3c4043] shadow-inner">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${m.value}%` }}
-                    transition={{ delay: 0.5, duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                    className="h-full rounded-full shadow-[0_0_15px_rgba(26,115,232,0.4)]" style={{ background: m.color }} />
-                </div>
-              </div>
-            ))}
+             </div>
+             
+             <ResponsiveContainer width="100%" height={350}>
+               {period === 'weekly' ? (
+                 <AreaChart data={ANALYTICS_DATA.weekly} margin={{ top: 0, right: 0, bottom: 0, left: -25 }}>
+                   <defs>
+                     <linearGradient id="colorThreats" x1="0" y1="0" x2="0" y2="1">
+                       <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                       <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                     </linearGradient>
+                     <linearGradient id="colorSafe" x1="0" y1="0" x2="0" y2="1">
+                       <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
+                       <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                     </linearGradient>
+                   </defs>
+                   <XAxis dataKey="day" tick={{ fill: '#475569', fontSize: 10, fontWeight: 900 }} axisLine={false} tickLine={false} dy={10} />
+                   <YAxis tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
+                   <Tooltip content={<CT />} />
+                   <Area type="monotone" dataKey="threats" stroke="#ef4444" strokeWidth={3} fill="url(#colorThreats)" name="Critical" />
+                   <Area type="monotone" dataKey="safe" stroke="#06b6d4" strokeWidth={3} fill="url(#colorSafe)" name="Neutralized" />
+                 </AreaChart>
+               ) : (
+                 <LineChart data={ANALYTICS_DATA.monthly} margin={{ top: 0, right: 0, bottom: 0, left: -25 }}>
+                   <XAxis dataKey="month" tick={{ fill: '#475569', fontSize: 10, fontWeight: 900 }} axisLine={false} tickLine={false} dy={10} />
+                   <YAxis tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
+                   <Tooltip content={<CT />} />
+                   <Line type="monotone" dataKey="threats" stroke="#ef4444" strokeWidth={4} dot={{ fill: '#ef4444', r: 6, strokeWidth: 0 }} name="Detected" />
+                   <Line type="monotone" dataKey="takedowns" stroke="#8b5cf6" strokeWidth={4} dot={{ fill: '#8b5cf6', r: 6, strokeWidth: 0 }} name="Mitigated" />
+                 </LineChart>
+               )}
+             </ResponsiveContainer>
           </div>
-        </motion.div>
+
+          {/* Recent Live Threats from Supabase */}
+          <div className="glass-card p-8 border-slate-800 bg-slate-900/40">
+            <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-3">
+                  <Activity size={18} className="text-cyan-400" />
+                  <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em] font-tech">Live Evidence Stream</h3>
+               </div>
+               <span className="text-[9px] font-mono text-slate-500 uppercase">Real-time DB Sync Active</span>
+            </div>
+            
+            <div className="space-y-3">
+               {dbThreats.length > 0 ? dbThreats.map((t, i) => (
+                 <div key={t.id} className="flex items-center justify-between p-4 bg-slate-950 border border-white/5 rounded-xl group hover:border-cyan-500/20 transition-all">
+                    <div className="flex items-center gap-4">
+                       <div className={`w-2 h-2 rounded-full ${t.severity === 'Critical' ? 'bg-red-500' : 'bg-cyan-500'} animate-pulse`} />
+                       <div>
+                          <p className="text-[11px] font-black text-white uppercase tracking-tight">{t.type}</p>
+                          <p className="text-[9px] text-slate-500 font-mono truncate max-w-[300px]">{t.description}</p>
+                       </div>
+                    </div>
+                    <div className="text-right">
+                       <p className="text-[10px] font-bold text-white font-mono">{new Date(t.created_at).toLocaleTimeString()}</p>
+                       <p className="text-[8px] text-slate-600 font-mono uppercase font-black uppercase tracking-widest">Locked</p>
+                    </div>
+                 </div>
+               )) : (
+                 <div className="p-12 text-center text-slate-600 border border-dashed border-slate-800 rounded-2xl">
+                    <p className="text-[10px] font-black uppercase tracking-widest">No recent tactical interceptions</p>
+                 </div>
+               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Mini-Charts */}
+        <div className="lg:col-span-4 flex flex-col gap-8">
+           <div className="glass-card p-10 border-slate-800 bg-slate-900/40 flex-1">
+              <p className="text-[10px] font-black text-cyan-500 tracking-[0.3em] uppercase mb-1">Intelligence Origins</p>
+              <h3 className="text-sm font-bold text-white mb-10 uppercase font-tech">Platform Distribution</h3>
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie data={ANALYTICS_DATA.platforms} cx="50%" cy="50%" innerRadius={70} outerRadius={100}
+                    dataKey="value" paddingAngle={8} stroke="none">
+                    {ANALYTICS_DATA.platforms.map((e, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CT />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-4 mt-8">
+                {ANALYTICS_DATA.platforms.map((p, i) => (
+                  <div key={p.name} className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i] }} />
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{p.name}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-white font-tech">{p.value}%</span>
+                  </div>
+                ))}
+              </div>
+           </div>
+
+           <div className="glass-card p-8 bg-gradient-to-tr from-purple-500/10 to-transparent border-purple-500/10">
+              <Globe size={24} className="text-purple-400 mb-4" />
+              <p className="text-xs font-bold text-white uppercase tracking-widest font-tech mb-2">Regional Heatmap</p>
+              <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                Interception surge detected in Southeast Asia. Node 04 processing 4x normal volume. Auto-scaling protocols active.
+              </p>
+           </div>
+        </div>
       </div>
     </div>
   );

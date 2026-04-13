@@ -71,78 +71,85 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-3xl space-y-6">
-      {/* API Keys */}
-      <SettingSection title="API Keys & Integrations" icon={Key} delay={0}>
-        <ApiKeyField label="GEMINI API KEY" placeholder="AIza••••••••••••••••••••••••••" envKey="VITE_GEMINI_API_KEY"
-          link="https://aistudio.google.com/app/apikey" />
-        <ApiKeyField label="FIREBASE API KEY" placeholder="AIza••••••••••••••••••••••••••" envKey="VITE_FIREBASE_API_KEY"
-          link="https://console.firebase.google.com" />
-        <div className="mt-2 p-3 rounded-xl border border-[#f9ab00]/20 bg-[#f9ab00]/5">
-          <p className="text-xs text-[#fdd663] font-mono leading-relaxed">
-            ⚠️ Store API keys in your <code>.env</code> file. Never commit them to git.
-            For production, use Firebase environment config or Render secret env vars.
-          </p>
+    <div className="max-w-4xl space-y-8 pb-20">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <p className="text-[10px] font-black text-cyan-500 tracking-[0.4em] uppercase mb-1 italic">Core System Protocols</p>
+          <h2 className="text-3xl font-black text-white tracking-tight font-tech uppercase italic">CONFIGURATION<span className="text-cyan-500">_SENTINEL ZERO</span></h2>
         </div>
-      </SettingSection>
+      </div>
 
-      {/* Chrome Extension */}
-      <SettingSection title="Chrome Extension Delivery" icon={Globe} delay={0.05}>
-        <div className="space-y-4">
-          <p className="text-xs text-[#9aa0a6] leading-relaxed">
-            To share Sentinel-Zero as a Chrome Extension with your teammate:
-          </p>
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-3">
-            <div className="flex gap-3">
-              <div className="w-5 h-5 rounded-full bg-[#1a73e8]/20 text-[#8ab4f8] flex items-center justify-center text-[10px] font-bold">1</div>
-              <p className="text-[11px] text-white">Run <code className="text-[#8ab4f8]">npm run build</code> to generate the <code className="text-white">dist</code> folder.</p>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* API Keys */}
+        <SettingSection title="Neural API Keys" icon={Key} delay={0}>
+          <ApiKeyField label="GEMINI NEURAL ENGINE" placeholder="AIza••••••••••••••••••••••••••" envKey="VITE_GEMINI_API_KEY"
+            link="https://aistudio.google.com/app/apikey" />
+          <ApiKeyField label="FIREBASE DATA LAKE" placeholder="AIza••••••••••••••••••••••••••" envKey="VITE_FIREBASE_API_KEY"
+            link="https://console.firebase.google.com" />
+          <div className="mt-4 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 backdrop-blur-sm">
+            <p className="text-[10px] text-amber-500 font-black uppercase tracking-widest leading-relaxed">
+              ⚠️ Warning: Cryptographic keys must remain in local .env registry. Public disclosure will compromise network integrity.
+            </p>
+          </div>
+        </SettingSection>
+
+        {/* Chrome Extension */}
+        <SettingSection title="Network Propagation" icon={Globe} delay={0.05}>
+          <div className="space-y-4">
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider italic">
+              Deploy Sentinel Zero node to remote environments:
+            </p>
+            <div className="space-y-3">
+              {[
+                { n: '1', t: 'Execute `npm run build` to compile binary assets.' },
+                { n: '2', t: 'Compress static `dist` registry into encrypted ZIP.' },
+                { n: '3', t: 'Load unpacked build via `chrome://extensions` protocols.' }
+              ].map(step => (
+                <div key={step.n} className="flex gap-4 p-3 bg-white/5 border border-white/10 rounded-xl hover:border-cyan-500/30 transition-all">
+                  <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-[10px] font-black">{step.n}</div>
+                  <p className="text-[11px] text-slate-300 font-medium">{step.t}</p>
+                </div>
+              ))}
             </div>
-            <div className="flex gap-3">
-              <div className="w-5 h-5 rounded-full bg-[#1a73e8]/20 text-[#8ab4f8] flex items-center justify-center text-[10px] font-bold">2</div>
-              <p className="text-[11px] text-white">Zip the <code className="text-white">dist</code> folder and send it to your friend.</p>
+            <motion.button whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}
+              className="w-full py-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2 shadow-lg">
+              <Download size={14} /> Download Extension Bundle
+            </motion.button>
+          </div>
+        </SettingSection>
+
+        {/* Detection thresholds */}
+        <SettingSection title="Tactical Scan Engine" icon={Cpu} delay={0.1}>
+          <div className="mb-6">
+            <div className="flex justify-between mb-3">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">SENSITIVITY THRESHOLD</label>
+              <span className="text-xs font-tech font-black text-cyan-500">{threshold}%</span>
             </div>
-            <div className="flex gap-3">
-              <div className="w-5 h-5 rounded-full bg-[#1a73e8]/20 text-[#8ab4f8] flex items-center justify-center text-[10px] font-bold">3</div>
-              <p className="text-[11px] text-white">Ask them to go to <code className="text-[#8ab4f8]">chrome://extensions</code>, enable "Developer mode", and click "Load unpacked".</p>
+            <input type="range" min={60} max={99} value={threshold} onChange={e => setThreshold(+e.target.value)}
+              className="w-full accent-cyan-500 bg-white/10 h-1.5 rounded-full appearance-none cursor-pointer" />
+            <div className="flex justify-between text-[9px] font-black text-slate-500 mt-2 uppercase">
+              <span>Low Latency</span><span>High Fidelity</span>
             </div>
           </div>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="w-full py-2.5 rounded-xl bg-[#1a73e8]/10 border border-[#1a73e8]/30 text-[10px] font-bold uppercase tracking-widest text-[#8ab4f8] hover:bg-[#1a73e8]/20 transition-all flex items-center justify-center gap-2">
-            <Download size={12} /> Download Extension Bundle (.zip)
-          </motion.button>
-        </div>
-      </SettingSection>
+          <Toggle label="Neural Surveillance" desc="Real-time heuristic threat detection tracking" defaultOn={true} />
+          <Toggle label="Zero-Day Mitigation" desc="Automated takedown request drafting" defaultOn={false} />
+          <Toggle label="Gemini Intelligence" desc="Multi-modal reasoning for signal classification" defaultOn={true} />
+        </SettingSection>
 
-      {/* Detection thresholds */}
-      <SettingSection title="Detection Engine" icon={Cpu} delay={0.1}>
-        <div className="mb-5">
-          <div className="flex justify-between mb-2">
-            <label className="text-xs font-mono text-[#9aa0a6]">UNAUTHORIZED THRESHOLD</label>
-            <span className="text-xs font-mono font-bold text-white">{threshold}%</span>
-          </div>
-          <input type="range" min={60} max={99} value={threshold} onChange={e => setThreshold(+e.target.value)}
-            className="w-full accent-[#1a73e8]" />
-          <div className="flex justify-between text-[10px] font-mono text-[#9aa0a6] mt-1">
-            <span>60% (lenient)</span><span>99% (strict)</span>
-          </div>
-        </div>
-        <Toggle label="Enable live monitoring" desc="Simulate real-time threat detection in the dashboard" defaultOn={true} />
-        <Toggle label="Auto-generate DMCA notices" desc="Automatically draft takedown notices for high-confidence threats" defaultOn={false} />
-        <Toggle label="Gemini AI explanations" desc="Use Gemini API to provide reasoning for each detection" defaultOn={true} />
-        <Toggle label="pHash fingerprinting" desc="Generate perceptual hash for uploaded assets" defaultOn={true} />
-      </SettingSection>
+        {/* Notifications */}
+        <SettingSection title="Alert Protocols" icon={Bell} delay={0.15}>
+          <Toggle label="HUD Notifications" desc="Visual overlays for high-risk signal detection" defaultOn={true} />
+          <Toggle label="Encrypted Email Relays" desc="SMTP transmission of weekly intel summaries" defaultOn={false} />
+          <Toggle label="Neural Webhooks" desc="Direct synchronization with Slack/Discord nodes" defaultOn={false} />
+        </SettingSection>
+      </div>
 
-      {/* Notifications */}
-      <SettingSection title="Notifications & Alerts" icon={Bell} delay={0.15}>
-        <Toggle label="Browser notifications" desc="Get notified when new threats are detected" defaultOn={true} />
-        <Toggle label="Email alerts for high-risk threats" desc="Send email when similarity > threshold" defaultOn={false} />
-        <Toggle label="Slack webhook integration" desc="Post threat alerts to your Slack channel" defaultOn={false} />
-      </SettingSection>
-
-      <button onClick={save} className="btn-primary flex items-center gap-2">
-        {saved ? <CheckCircle size={16} /> : <Save size={16} />}
-        {saved ? 'Saved!' : 'Save Settings'}
-      </button>
+      <div className="flex justify-end pt-8">
+        <button onClick={save} className="px-10 py-5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-[12px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 shadow-2xl shadow-cyan-500/30 active:scale-95">
+          {saved ? <CheckCircle size={20} /> : <Save size={20} />}
+          {saved ? 'SYNC COMPLETE' : 'SAVE PROTOCOLS'}
+        </button>
+      </div>
     </div>
   );
 }

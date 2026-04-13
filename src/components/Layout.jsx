@@ -11,16 +11,17 @@ export default function Layout() {
   const location = useLocation();
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden text-white font-tech selection:bg-primary/30">
-      {/* Live wallpaper background layer */}
+    <div className="flex h-screen bg-black overflow-hidden text-slate-100 font-tech selection:bg-primary/30">
+      {/* Background Layers */}
       <div className="live-wallpaper" />
+      <div className="scanline-overlay" />
       
       {/* 3D Particle Layer */}
       <ThreeBackground />
 
       {/* Holographic scanning overlay */}
-      <div className="fixed inset-0 pointer-events-none z-[1] opacity-20">
-        <div className="w-full h-[2px] bg-primary/20 absolute top-0 left-0 animate-[scan_8s_linear_infinite]" />
+      <div className="fixed inset-0 pointer-events-none z-[1] opacity-10">
+        <div className="w-full h-[150px] bg-gradient-to-b from-primary/0 via-primary/10 to-primary/0 absolute top-0 left-0 animate-[scan_12s_linear_infinite]" />
       </div>
 
       <div className="flex flex-1 w-full relative z-[10]">
@@ -29,15 +30,15 @@ export default function Layout() {
         <div className="flex flex-col flex-1 min-w-0 h-full relative">
           <TopBar />
           
-          <main className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar relative z-[20]">
-            <div className="max-w-[1600px] mx-auto w-full">
+          <main className="flex-1 overflow-y-auto p-4 lg:p-8 relative z-[20] scroll-smooth">
+            <div className="max-w-[1600px] mx-auto w-full pb-20">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location.pathname}
-                  initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
+                  initial={{ opacity: 0, y: 15, filter: 'blur(10px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, y: -10, filter: 'blur(10px)' }}
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  exit={{ opacity: 0, y: -15, filter: 'blur(10px)' }}
+                  transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 >
                   <Outlet />
                 </motion.div>
@@ -47,13 +48,13 @@ export default function Layout() {
         </div>
       </div>
 
-      {/* Internal CSS for scanning animation only if not in index.css */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scan {
-          0% { top: -10% }
-          100% { top: 110% }
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(110vh); }
         }
       `}} />
     </div>
   );
 }
+

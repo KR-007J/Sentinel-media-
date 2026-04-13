@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "sentinel-zero-cafe7"
-  }
+    "default": "sentinel-zero-v3"
+  },
+  "targets": {},
+  "etags": {}
 }

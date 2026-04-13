@@ -6,12 +6,12 @@ import { useStore } from '../hooks/useStore';
 import { format } from 'date-fns';
 
 const PAGE_TITLES = {
-  '/dashboard':  { title: 'Operations Dashboard', sub: 'Neural Threat Analysis' },
-  '/scanner':    { title: 'Asset Scanner',         sub: 'Holographic Asset Fingerprinting' },
-  '/threat-map': { title: 'Propagation Map',       sub: 'Global Signal Interception' },
-  '/analytics':  { title: 'System Analytics',      sub: 'Algorithmic Performance Data' },
-  '/reports':    { title: 'Intelligence Reports',    sub: 'Classified Documentation' },
-  '/settings':   { title: 'Configuration',           sub: 'System Protocols & Encryption' },
+  '/dashboard':  { title: 'Operations Dashboard', sub: 'Neural Threat Analysis [Active]' },
+  '/scanner':    { title: 'Asset Fingerprinting',  sub: 'Multimodal Forensic Scanner' },
+  '/threat-map': { title: 'Global Threat Map',     sub: 'Real-time Signal Interception' },
+  '/analytics':  { title: 'Intelligence Matrix',   sub: 'Algorithmic Data Aggregation' },
+  '/reports':    { title: 'Classified Dossiers',   sub: 'Executive Intelligence Reports' },
+  '/settings':   { title: 'System Protocols',      sub: 'Encryption & Neural Config' },
 };
 
 export default function TopBar() {

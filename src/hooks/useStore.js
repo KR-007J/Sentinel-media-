@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { seedDatabase } from '../lib/dbSeed';
 import { generateLiveThreat } from '../services/gemini';
+import { AttackSimulator } from '../services/simulator';
+import { SentinelEngine } from '../services/sentinelEngine';
 
 // Helper to handle Supabase responses
 const handleResponse = (data, error) => {
@@ -18,6 +20,12 @@ export const useStore = create((set, get) => ({
   assets: [],
   systemLogs: [],
   
+  // CYBERSECURITY STATE
+  globalRiskScore: 12,
+  isSimulationActive: false,
+  activeSimulationProfile: null,
+  simulator: null,
+
   // STATS (Calculated or cached)
   stats: {
     totalIntercepts: 0,
@@ -44,7 +52,33 @@ export const useStore = create((set, get) => ({
       }
     });
 
-    // 2. Realtime Subscription
+    // 2. Initialize Simulator
+    const simulator = new AttackSimulator((event) => {
+      if (event.type === 'THREAT_DETECTED') {
+        set(state => ({
+          threats: [event.threat, ...state.threats],
+          globalRiskScore: Math.min(100, state.globalRiskScore + (event.threat.risk_score / 2))
+        }));
+        // Push to DB for persistence if needed, but for proto, local state is faster for UI response
+        supabase.from('threats').insert([event.threat]).then();
+      }
+      if (event.type === 'SIM_STOP') {
+        set({ isSimulationActive: false, activeSimulationProfile: null });
+        // Gradually Cool down risk
+        const cooldown = setInterval(() => {
+          const currentRisk = get().globalRiskScore;
+          if (currentRisk <= 12) {
+            clearInterval(cooldown);
+            set({ globalRiskScore: 12 });
+          } else {
+            set({ globalRiskScore: currentRisk - 2 });
+          }
+        }, 1000);
+      }
+    });
+    set({ simulator });
+
+    // 3. Realtime Subscription
     supabase
       .channel('schema-db-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'threats' }, (payload) => {
@@ -59,29 +93,21 @@ export const useStore = create((set, get) => ({
           set({ threats: currentThreats.filter(t => t.id !== oldRow.id), stats: { ...get().stats, totalIntercepts: Math.max(0, currentThreats.length - 1) } });
         }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, (payload) => {
-        const { eventType, new: newRow, old: oldRow } = payload;
-        const currentAssets = get().assets;
-        if (eventType === 'INSERT') set({ assets: [newRow, ...currentAssets] });
-        if (eventType === 'DELETE') set({ assets: currentAssets.filter(a => a.id !== oldRow.id) });
-      })
       .subscribe();
+  },
 
-    // 3. Live Intelligent Data Stream (Gemini Simulation)
-    if (!window.liveStreamStarted) {
-      window.liveStreamStarted = true;
-      // Start pushing a live threat to Supabase every 15 seconds
-      setInterval(async () => {
-        try {
-          const newThreat = await generateLiveThreat();
-          if (newThreat) {
-            await supabase.from('threats').insert([newThreat]);
-          }
-        } catch (e) {
-          console.error("Live stream pause:", e);
-        }
-      }, 15000);
+  // SIMULATION ACTIONS
+  triggerSimulation: (profileKey) => {
+    const { simulator } = get();
+    if (simulator) {
+      set({ isSimulationActive: true, activeSimulationProfile: profileKey });
+      simulator.start(profileKey);
     }
+  },
+
+  stopSimulation: () => {
+    const { simulator } = get();
+    if (simulator) simulator.stop();
   },
 
   // THREAT ACTIONS
@@ -100,18 +126,12 @@ export const useStore = create((set, get) => ({
     if (error) console.error(error.message);
   },
 
-  // ASSET ACTIONS
-  addAsset: async (a) => {
-    const { data, error } = await supabase.from('assets').insert([a]).select();
-    return handleResponse(data, error);
-  },
-
   // LOGGING
   addLog: async (log) => {
     await supabase.from('system_logs').insert([log]);
   },
 
-  // AUTHENTICATION (Simulated with persistence potential)
+  // AUTHENTICATION
   isAuthenticated: !!localStorage.getItem('sentinel_auth'),
   user: JSON.parse(localStorage.getItem('sentinel_user') || 'null'),
   
@@ -140,3 +160,4 @@ export const useStore = create((set, get) => ({
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
   toggleRole: () => set(s => ({ userRole: s.userRole === 'senior' ? 'junior' : 'senior' })),
 }));
+
