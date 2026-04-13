@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel-Zero | Offline Protocol</title>
+    <style>
+        body { background: #020617; color: #06b6d4; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .box { border: 1px solid #1e293b; padding: 2rem; border-radius: 1rem; background: #0f172a; box-shadow: 0 0 50px rgba(6,182,212,0.1); }
+        h1 { margin: 0 0 1rem; letter-spacing: 0.2em; font-size: 1.2rem; }
+        p { color: #64748b; font-size: 0.8rem; }
+        .pulse { animation: pulse 2s infinite; color: #ef4444; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1 class="pulse">NETWORK DISCONNECTED</h1>
+        <p>SENTINEL-ZERO: LOCAL CACHE NODE ACTIVE</p>
+        <p>System is in offline survival mode. Please check your uplink connection.</p>
+    </div>
+</body>
+</html>

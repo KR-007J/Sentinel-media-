@@ -36,7 +36,7 @@ export default function AIPanel({ result, loading, onClose }) {
           </div>
           <div>
             <span className="text-xs font-black text-white block uppercase tracking-widest font-tech">Quantum Intelligence</span>
-            <span className="text-[9px] text-slate-500 font-mono uppercase tracking-tighter">Neural Thread Analysis Active</span>
+            <span className="text-[9px] text-cyan-500/60 font-black uppercase tracking-tighter">Powered by Google Gemini 1.5 Flash</span>
           </div>
         </div>
         <button onClick={copy} aria-label="Copy AI analysis to clipboard" className="p-2 rounded-lg border border-slate-800 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-400 transition-all">

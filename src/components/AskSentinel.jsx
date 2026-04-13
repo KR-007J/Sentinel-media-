@@ -94,7 +94,7 @@ export default function AskSentinel() {
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-white font-tech uppercase">Ask Sentinel</h3>
-                  <p className="text-[10px] text-cyan-500 animate-pulse tracking-widest uppercase">AI Defense Assistant</p>
+                  <p className="text-[10px] text-cyan-500 animate-pulse tracking-widest uppercase">Expert Analysis via Gemini 1.5 Flash</p>
                 </div>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors">
@@ -146,8 +146,13 @@ export default function AskSentinel() {
                 </button>
               </form>
               <div className="flex gap-2 mt-3 overflow-x-auto custom-scrollbar pb-1">
-                <button onClick={() => setInput("Why is my system at risk?")} className="shrink-0 text-[10px] font-black uppercase bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-700">Why am I at risk?</button>
-                <button onClick={() => setInput("How to fix vulnerabilities?")} className="shrink-0 text-[10px] font-black uppercase bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-700">How to fix vulnerabilities?</button>
+                {isSimulationActive ? (
+                  <button onClick={() => setInput("Execute immediate lockdown protocol.")} className="shrink-0 text-[10px] font-black uppercase bg-red-900/30 text-red-400 px-3 py-1.5 rounded-lg border border-red-900/50 hover:bg-red-900/50">Emergency Lockdown</button>
+                ) : (
+                  <button onClick={() => setInput("Run deep forensic scan.")} className="shrink-0 text-[10px] font-black uppercase bg-cyan-900/30 text-cyan-400 px-3 py-1.5 rounded-lg border border-cyan-900/50 hover:bg-cyan-900/50">Forensic Scan</button>
+                )}
+                <button onClick={() => setInput("How to harden my Zero-Trust perimeter?")} className="shrink-0 text-[10px] font-black uppercase bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-700">Perimeter Hardening</button>
+                <button onClick={() => setInput("Explain current global risk profile.")} className="shrink-0 text-[10px] font-black uppercase bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-700">Risk Profile</button>
               </div>
             </div>
           </motion.div>

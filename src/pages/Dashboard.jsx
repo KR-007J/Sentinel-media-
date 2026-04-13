@@ -32,7 +32,8 @@ export default function Dashboard() {
     toggleLockdown,
     activeOperators,
     simulateOperatorActivity,
-    isRoleTransitioning
+    isRoleTransitioning,
+    strategicInsights
   } = useStore();
 
   const roleColor = role === 'ADMIN' ? 'text-red-500' : role === 'ANALYST' ? 'text-blue-500' : 'text-gray-400';
@@ -453,6 +454,33 @@ export default function Dashboard() {
                    <span className="text-[8px] font-mono text-cyan-500/60 uppercase">Live</span>
                 </div>
               </div>
+
+              {/* Neural Heatmap Visualizer */}
+              <div className="mx-4 p-3 bg-slate-900/40 border border-slate-800 rounded-xl">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[7px] font-black uppercase text-slate-500 tracking-[0.2em]">Neural Core Activity (Telemetry)</span>
+                  <div className="flex gap-1">
+                    {[1,2,3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-cyan-500/40 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />)}
+                  </div>
+                </div>
+                <div className="grid grid-cols-12 gap-1 h-3">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <motion.div 
+                      key={i}
+                      animate={{ 
+                        opacity: [0.3, 0.8, 0.3],
+                        backgroundColor: isSimulationActive ? ['#ef4444', '#7f1d1d', '#ef4444'] : ['#06b6d4', '#164e63', '#06b6d4']
+                      }}
+                      transition={{ 
+                        duration: 2 + Math.random() * 2,
+                        repeat: Infinity,
+                        delay: i * 0.1
+                      }}
+                        className="rounded-[1px]"
+                    />
+                  ))}
+                </div>
+              </div>
               <div className="flex gap-2 p-1 bg-black/40 rounded-lg border border-white/5">
                 <button 
                   onClick={() => setSidebarTab('threats')}
@@ -476,6 +504,18 @@ export default function Dashboard() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-black/20">
+                {/* AI Strategy Hub */}
+                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 shadow-xl relative overflow-hidden group">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap size={14} className="text-cyan-400 group-hover:scale-125 transition-transform" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Neural Intelligence Hub</span>
+                  </div>
+                  <div className="p-3 bg-black/40 rounded border border-white/5 font-mono text-[10px] text-slate-400 leading-relaxed relative">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500/30" />
+                    {strategicInsights}
+                  </div>
+                </div>
+
               {sidebarTab === 'threats' && (
                 threats.length > 0 ? (
                   threats.map((threat, idx) => (
