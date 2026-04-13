@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { seedDatabase } from '../lib/dbSeed';
+import { MOCK_THREATS } from '../data/mockData';
 import { AttackSimulator } from '../services/simulator';
 
 // Helper to handle Supabase responses
@@ -18,6 +19,10 @@ export const useStore = create((set, get) => ({
   assets: [],
   systemLogs: [],
   
+  // LIMITS
+  MAX_LOGS: 50,
+  MAX_THREATS: 20,
+
   // CYBERSECURITY STATE
   globalRiskScore: 12,
   isSimulationActive: false,
@@ -25,6 +30,7 @@ export const useStore = create((set, get) => ({
   simulator: null,
 
   // UI STATE
+  activeDefenses: [],
   loading: false,
   error: null,
   isAuthenticated: !!localStorage.getItem('sentinel_auth'),
@@ -43,19 +49,121 @@ export const useStore = create((set, get) => ({
     regions: 184
   },
 
+  // PERSONALIZATION
+  protectedSystem: "Sentinel Core Network",
+  setProtectedSystem: (name) => set({ protectedSystem: name }),
+
+  // HELPERS
+  addLog: (message, type = 'neutral') => set(state => ({
+    systemLogs: [{
+      id: Date.now() + Math.random(),
+      message,
+      timestamp: new Date().toISOString(),
+      type
+    }, ...state.systemLogs].slice(0, state.MAX_LOGS)
+  })),
+
+  addThreat: (threat) => set(state => {
+    // Check if any active defense would have blocked this
+    const { activeDefenses } = state;
+    const type = (threat.type || "").toUpperCase();
+    const desc = (threat.description || "").toUpperCase();
+
+    const isBlocked = activeDefenses.some(d => {
+      if (d === 'FIREWALL' && (type.includes('SQL') || type.includes('XSS'))) return true;
+      if (d === '2FA' && (type.includes('BRUTE FORCE') || type.includes('LOGIN'))) return true;
+      if (d === 'BLOCK_IP' && (type.includes('VPN') || type.includes('GEO') || desc.includes('IP'))) return true;
+      if (d === 'RATE_LIMIT' && (type.includes('BOT') || type.includes('SCRAPING'))) return true;
+      return false;
+    });
+
+    if (isBlocked) {
+      state.addLog(`AUTO-BLOCK: ${threat.type} neutralized by active defense: ${activeDefenses.find(d => true)}`, 'success');
+      return { stats: { ...state.stats, totalIntercepts: state.stats.totalIntercepts + 1 } };
+    }
+
+    const updatedThreats = [threat, ...state.threats].slice(0, state.MAX_THREATS);
+    return {
+      threats: updatedThreats,
+      stats: { ...state.stats, totalIntercepts: state.stats.totalIntercepts + 1 }
+    };
+  }),
+
+  // DEFENSE ACTIONS
+  applyDefense: (actionType) => {
+    const { threats, globalRiskScore, addLog, activeDefenses } = get();
+    
+    if (activeDefenses.includes(actionType)) {
+      set({ activeDefenses: activeDefenses.filter(d => d !== actionType) });
+      addLog(`MODIFICATION: Defensive vector ${actionType} disengaged.`, 'neutral');
+      return;
+    }
+
+    let newThreats = [...threats];
+    let scoreReduction = 10;
+    let defenseMsg = "";
+    
+    switch(actionType) {
+      case 'FIREWALL':
+        newThreats = newThreats.filter(t => {
+          const type = (t.type || t.platform || "").toUpperCase();
+          return !type.includes('SQL') && !type.includes('XSS');
+        });
+        scoreReduction = 25;
+        defenseMsg = "Strategic Firewall Engaged. Filtered Injection Vectors.";
+        break;
+      case '2FA':
+        newThreats = newThreats.filter(t => {
+          const type = (t.type || t.platform || "").toUpperCase();
+          return !type.includes('BRUTE FORCE') && !type.includes('LOGIN');
+        });
+        scoreReduction = 20;
+        defenseMsg = "MFA Enforcement Active. Identity Vectors Secured.";
+        break;
+      case 'BLOCK_IP':
+        newThreats = newThreats.filter(t => {
+          const type = (t.type || t.platform || "").toUpperCase();
+          const desc = (t.description || t.reason || "").toUpperCase();
+          return !type.includes('VPN') && !type.includes('GEO') && !desc.includes('IP');
+        });
+        scoreReduction = 15;
+        defenseMsg = "IP Intelligence Applied. Malicious Proxies Blacklisted.";
+        break;
+      case 'RATE_LIMIT':
+        newThreats = newThreats.filter(t => {
+          const type = (t.type || t.platform || "").toUpperCase();
+          return !type.includes('BOT') && !type.includes('SCRAPING');
+        });
+        scoreReduction = 30;
+        defenseMsg = "Throughput Throttled. Automated Bot Activity Neutralized.";
+        break;
+      default:
+        break;
+    }
+
+    const isSecure = newThreats.length === 0;
+    addLog(`STRATEGIC DEFENSE: ${defenseMsg}`, 'success');
+    
+    set({ 
+      activeDefenses: [...activeDefenses, actionType],
+      threats: newThreats, 
+      globalRiskScore: isSecure ? 5 : Math.max(5, globalRiskScore - scoreReduction),
+      isSimulationActive: !isSecure && get().isSimulationActive
+    });
+  },
+
   // ACTIONS
   initialize: async () => {
+    const { addLog, MAX_LOGS, MAX_THREATS } = get();
     try {
       set({ loading: true, error: null });
       
-      // 1. Authenticate (Handle session failure gracefully)
+      // 1. Authenticate
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          set({ user, isAuthenticated: true });
-        }
+        if (user) set({ user, isAuthenticated: true });
       } catch (e) {
-        console.warn('Auth check failed - continuing in restricted mode');
+        console.warn('Auth check failed');
       }
 
       // 2. Database Sync
@@ -64,7 +172,7 @@ export const useStore = create((set, get) => ({
           .from('threats')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(MAX_THREATS);
         
         if (tErr) throw tErr;
 
@@ -74,28 +182,41 @@ export const useStore = create((set, get) => ({
             .from('threats')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(50);
+            .limit(MAX_THREATS);
           if (seededThreats) set({ threats: seededThreats });
         } else {
           set({ threats });
         }
       } catch (dbError) {
-        console.error('Supabase Sync Error:', dbError);
-        const { MOCK_THREATS } = await import('../data/mockData');
-        set({ threats: MOCK_THREATS });
+        set({ threats: MOCK_THREATS.slice(0, MAX_THREATS) });
       }
 
       // 3. Setup Simulator
       const simulator = new AttackSimulator((event) => {
-        if (event.type === 'THREAT_DETECTED') {
-          const currentThreats = get().threats;
-          set({ 
-            threats: [event.threat, ...currentThreats],
-            globalRiskScore: Math.min(100, get().globalRiskScore + (event.threat.risk_score || 5) / 2)
-          });
-        }
-        if (event.type === 'SIM_STOP') {
-          set({ isSimulationActive: false, activeSimulationProfile: null });
+        const { addThreat, addLog } = get();
+        
+        switch(event.type) {
+          case 'SIM_START':
+            addLog(event.message, 'neutral');
+            break;
+          case 'STATUS_UPDATE':
+            addLog(`ENGINE: ${event.message}`, 'neutral');
+            break;
+          case 'ANOMALY_DETECTED':
+            addLog(`ANOMALY: ${event.message}`, 'suspicious');
+            set(state => ({ globalRiskScore: Math.min(100, state.globalRiskScore + 5) }));
+            break;
+          case 'THREAT_DETECTED':
+            addThreat(event.threat);
+            addLog(`CRITICAL: ${event.threat.type} verified. Risk escalated.`, 'alert');
+            set(state => ({ 
+              globalRiskScore: Math.min(100, state.globalRiskScore + (event.threat.risk_score || 10) / 2)
+            }));
+            break;
+          case 'SIM_STOP':
+            addLog(event.message, 'success');
+            set({ isSimulationActive: false, activeSimulationProfile: null });
+            break;
         }
       });
       set({ simulator });
@@ -108,16 +229,14 @@ export const useStore = create((set, get) => ({
           const currentThreats = get().threats;
 
           if (eventType === 'INSERT') {
-            set({ 
-              threats: [newRow, ...currentThreats], 
-              stats: { ...get().stats, totalIntercepts: currentThreats.length + 1 } 
-            });
+            get().addThreat(newRow);
+            addLog(`INCOMING: ${newRow.type || 'Anomaly'} detected via Supabase Link.`, 'neutral');
           } else if (eventType === 'UPDATE') {
-            set({ threats: currentThreats.map(t => t.id === newRow.id ? newRow : t) });
+            set({ threats: currentThreats.map(t => t.id === newRow.id ? newRow : t).slice(0, MAX_THREATS) });
           } else if (eventType === 'DELETE') {
             set({ 
               threats: currentThreats.filter(t => t.id !== oldRow.id), 
-              stats: { ...get().stats, totalIntercepts: Math.max(0, currentThreats.length - 1) } 
+              stats: { ...get().stats, totalIntercepts: Math.max(0, get().stats.totalIntercepts - 1) } 
             });
           }
         })
@@ -126,9 +245,21 @@ export const useStore = create((set, get) => ({
       set({ loading: false });
       return () => supabase.removeChannel(channel);
     } catch (globalError) {
-      console.error('Fatal initialization error:', globalError);
       set({ loading: false, error: globalError.message });
     }
+  },
+
+  resolveThreat: (threatId) => {
+    const { threats, addLog, MAX_THREATS } = get();
+    const threat = threats.find(t => t.id === threatId);
+    if (!threat) return;
+
+    addLog(`RESOLVED: ${threat.type} neutralized by human override.`, 'success');
+    const newThreats = threats.filter(t => t.id !== threatId);
+    set(state => ({ 
+      threats: newThreats.slice(0, MAX_THREATS),
+      globalRiskScore: Math.max(5, state.globalRiskScore - (threat.risk_score || 10) / 2)
+    }));
   },
 
   triggerSimulation: (profileKey) => {

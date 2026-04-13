@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -9,6 +9,7 @@ import AIPanel from '../components/AIPanel';
 import { getThreatExplanation } from '../services/gemini';
 import { SentinelEngine } from '../services/sentinelEngine';
 import { supabase } from '../lib/supabase';
+import { useStore } from '../hooks/useStore';
 import toast from 'react-hot-toast';
 
 const STEPS = [
@@ -27,10 +28,11 @@ const SCAN_STAGES = [
 ];
 
 export default function Scanner() {
+  const { isScanning, startScan, finishScan, addLog, addThreat } = useStore();
   const [step, setStep] = useState('upload');
   const [file, setFile] = useState(null);
   const [targetInput, setTargetInput] = useState('');
-  const [mode, setMode] = useState('network'); // network, malware, identity
+  const [mode, setMode] = useState('network'); 
   const [progress, setProgress] = useState(0);
   const [stageIdx, setStageIdx] = useState(0);
   const [findings, setFindings] = useState(null);
@@ -40,38 +42,45 @@ export default function Scanner() {
   const onDrop = useCallback((files) => {
     if (files[0]) { 
       setFile(files[0]); 
-      toast.success('Binary loaded into secure buffer', {
-        icon: '🛡️',
-        style: { background: '#020617', color: '#06b6d4', border: '1px solid #06b6d433' }
-      }); 
+      toast.success('Binary loaded into secure buffer'); 
     }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop, accept: { 'application/*': [], 'text/*': [] }, maxFiles: 1,
+    disabled: isScanning
   });
 
   const runScan = async () => {
+    if (isScanning || (!file && !targetInput)) return;
+    
+    startScan();
     setStep('fingerprint');
     setProgress(0);
     setStageIdx(0);
 
-    // SIMULATED SCAN PROGRESS
-    const total = SCAN_STAGES.reduce((s, st) => s + st.duration, 0);
-    let elapsed = 0;
-    for (let i = 0; i < SCAN_STAGES.length; i++) {
-      setStageIdx(i);
-      await new Promise(r => setTimeout(r, SCAN_STAGES[i].duration));
-      elapsed += SCAN_STAGES[i].duration;
-      setProgress(Math.round((elapsed / total) * 100));
-      if (i === 2) setStep('scan');
-    }
-
-    // REAL AI ANALYSIS
-    setAiLoading(true);
-    setStep('result');
-    
     try {
+      // 1. SIMULATED PROGRESS (STAGGERED)
+      const total = SCAN_STAGES.reduce((s, st) => s + st.duration, 0);
+      let elapsed = 0;
+      
+      for (let i = 0; i < SCAN_STAGES.length; i++) {
+        setStageIdx(i);
+        const stageDuration = SCAN_STAGES[i].duration;
+        const steps = 10;
+        for (let j = 0; j < steps; j++) {
+          await new Promise(r => setTimeout(r, stageDuration / steps));
+          elapsed += stageDuration / steps;
+          const currentProgress = Math.min(99, Math.round((elapsed / total) * 100));
+          setProgress(currentProgress);
+        }
+        if (i === 1) setStep('scan');
+      }
+
+      // 2. AI & ENGINE ANALYSIS
+      setAiLoading(true);
+      setStep('result');
+      
       const telemetry = {
         mfaEnabled: Math.random() > 0.5,
         isNewDevice: Math.random() > 0.3,
@@ -80,52 +89,75 @@ export default function Scanner() {
       };
 
       const analysis = SentinelEngine.calculateEventRisk(telemetry);
+      const targetName = targetInput || file?.name || 'Local Gateway';
       
       const resData = {
-        target: targetInput || file?.name || 'Local Gateway',
-        risk_score: analysis.score,
-        severity: analysis.label,
-        flags: analysis.flags,
+        target: targetName,
+        risk_score: analysis?.score || 15,
+        severity: analysis?.label || 'SECURE',
+        flags: analysis?.flags || [],
         timestamp: new Date().toISOString()
       };
       
       setFindings(resData);
 
-      // Use AI to explain the findings
-      const aiExplanation = await getThreatExplanation({
+      // AI Explanation with Debounce/Guard logic (prevent parallel is already handled by isScanning)
+      const aiResponse = await getThreatExplanation({
         type: `Vulnerability-${mode.toUpperCase()}`,
-        severity: analysis.label,
-        risk_score: analysis.score,
-        description: `Target ${resData.target} exhibited ${analysis.flags.length} critical anomalies during Zero Trust validation.`,
-        flags: analysis.flags
+        severity: analysis?.label || 'SECURE',
+        risk_score: analysis?.score || 10,
+        description: `Target ${targetName} exhibited ${analysis?.flags?.length || 0} critical anomalies during Zero Trust validation.`,
+        flags: analysis?.flags || []
       });
+
+      const statusMap = { 'CRITICAL': 'unauthorized', 'WARNING': 'suspicious', 'SECURE': 'safe' };
+      const riskLevelMap = { 'CRITICAL': 'high', 'WARNING': 'medium', 'SECURE': 'low' };
       
-      setAiResult({
-        status: analysis.label,
-        reason: aiExplanation,
-        recommended_actions: SentinelEngine.getRecommendations(analysis.label)
-      });
+      const processedAiResult = {
+        status: statusMap[analysis?.label] || 'safe',
+        risk_level: riskLevelMap[analysis?.label] || 'low',
+        confidence: aiResponse?.confidence || 98.4,
+        reason: aiResponse?.reason || "System integrity validated through behavioral analysis.",
+        fix: aiResponse?.fix || "Continue monitoring.",
+        action: analysis?.label === 'SECURE' ? 'AUTHENTICATED' : 'CHALLENGED',
+        recommended_actions: [
+          ...(aiResponse?.fix ? [aiResponse.fix] : []),
+          ...(SentinelEngine?.getRecommendations ? SentinelEngine.getRecommendations(analysis?.label) : [])
+        ]
+      };
 
-      // SAVE TO SUPABASE
-      await supabase.from('threats').insert({
-        type: `LOG: ${mode.toUpperCase()} SCAN`,
-        severity: analysis.label,
-        description: `Deep Audit of ${resData.target} completed. Final Risk: ${analysis.score}%`,
+      setAiResult(processedAiResult);
+
+      // 3. PERSIST & LOG (Sequential)
+      const newThreat = {
+        type: `SCAN: ${mode.toUpperCase()}`,
+        severity: analysis?.label || 'SECURE',
+        description: `Deep Audit of ${targetName} completed. Result: ${analysis?.label || 'SECURE'}`,
         location: '127.0.0.1',
-        risk_score: analysis.score
-      });
+        risk_score: analysis?.score || 5
+      };
 
-      toast.success(`AUDIT COMPLETE: ${analysis.label}`, { icon: '🛡️' });
+      const { data: savedThreat } = await supabase.from('threats').insert(newThreat).select().single();
+      
+      if (savedThreat) {
+        addThreat(savedThreat);
+        addLog(`AUDIT COMPLETE: ${targetName} processed with ${analysis?.label} rating.`, 'success');
+      }
+
+      finishScan(processedAiResult);
+      setProgress(100);
 
     } catch (err) {
-      console.error(err);
+      console.error('Scan Failed:', err);
       toast.error('Audit core encountered a kernel panic');
+      finishScan(null);
     } finally {
       setAiLoading(false);
     }
   };
 
   const reset = () => {
+    if (isScanning) return;
     setStep('upload'); setFile(null); setTargetInput(''); setProgress(0);
     setFindings(null); setAiResult(null);
   };
@@ -157,8 +189,8 @@ export default function Scanner() {
               <motion.div key="upload" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
                 <div className="flex gap-2 p-1.5 bg-slate-900/60 border border-slate-800 rounded-2xl w-fit">
                   {[{k:'network',l:'Network Node'},{k:'malware',l:'Malware Bin'},{k:'identity',l:'Identity Audit'}].map(m => (
-                    <button key={m.k} onClick={() => setMode(m.k)}
-                      className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === m.k ? 'bg-cyan-500 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-white'}`}>
+                    <button key={m.k} onClick={() => setMode(m.k)} disabled={isScanning}
+                      className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === m.k ? 'bg-cyan-500 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-white'} ${isScanning ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       {m.l}
                     </button>
                   ))}
@@ -166,7 +198,7 @@ export default function Scanner() {
 
                 {mode === 'malware' ? (
                   <div {...getRootProps()} className={`glass-card p-24 text-center cursor-pointer transition-all duration-700 min-h-[450px] flex flex-col items-center justify-center relative group
-                    ${isDragActive ? 'border-cyan-500 bg-cyan-500/10 scale-95' : 'border-slate-800 hover:border-cyan-500/40 hover:bg-cyan-500/5'}`}>
+                    ${isDragActive ? 'border-cyan-500 bg-cyan-500/10 scale-95' : 'border-slate-800 hover:border-cyan-500/40 hover:bg-cyan-500/5'} ${isScanning ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     <input {...getInputProps()} />
                     
                     <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 bg-slate-900 border border-slate-800 shadow-2xl group-hover:rotate-12 transition-transform duration-500">
@@ -195,18 +227,20 @@ export default function Scanner() {
                         <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Provide IP, URL, or SID for Zero Trust validation</p>
                       </div>
                     </div>
-                    <input className="w-full bg-slate-950 border border-slate-800 rounded-xl p-5 text-white font-mono text-sm outline-none focus:border-cyan-500 transition-all placeholder:text-slate-700" 
+                    <input className="w-full bg-slate-950 border border-slate-800 rounded-xl p-5 text-white font-mono text-sm outline-none focus:border-cyan-500 transition-all placeholder:text-slate-700 disabled:opacity-50" 
                       placeholder={mode === 'network' ? "e.g. 192.168.1.1 or api.gateway.internal" : "e.g. USR-0092-ALPHA"}
-                      value={targetInput} onChange={e => setTargetInput(e.target.value)} />
+                      value={targetInput} onChange={e => setTargetInput(e.target.value)} disabled={isScanning} />
                   </div>
                 )}
 
-                <button onClick={runScan} disabled={!file && !targetInput}
-                  className="tech-button w-full !py-6 !bg-cyan-500 !text-slate-950 hover:!bg-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.3)] border-none">
-                  <ScanLine size={24} className="mr-3" /> <span>COMMENCE ZERO TRUST AUDIT</span>
+                <button onClick={runScan} disabled={isScanning || (!file && !targetInput)}
+                  className={`tech-button w-full !py-6 !bg-cyan-500 !text-slate-950 hover:!bg-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.3)] border-none transition-all ${isScanning ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}>
+                  <ScanLine size={24} className={`mr-3 ${isScanning ? 'animate-spin' : ''}`} /> 
+                  <span>{isScanning ? 'SENSOR ARRAY LOCK - SCANNING...' : 'COMMENCE ZERO TRUST AUDIT'}</span>
                 </button>
               </motion.div>
             )}
+
 
             {(step === 'fingerprint' || step === 'scan') && (
               <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card p-24 text-center space-y-12 relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">

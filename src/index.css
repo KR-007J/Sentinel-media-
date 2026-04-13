@@ -25,10 +25,40 @@
   
   .font-tech {
     font-family: var(--font-mono);
+    @apply uppercase tracking-widest font-black;
   }
 }
 
 @layer components {
+  .animate-critical {
+    animation: critical-shimmer 2s infinite ease-in-out;
+  }
+
+  @keyframes critical-shimmer {
+    0% { background: rgba(239, 68, 68, 0); }
+    50% { background: rgba(239, 68, 68, 0.08); }
+    100% { background: rgba(239, 68, 68, 0); }
+  }
+
+  .scanner-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    box-shadow: 0 0 15px var(--primary);
+    z-index: 50;
+    pointer-events: none;
+    animation: scanner-beam 4s infinite linear;
+  }
+
+  @keyframes scanner-beam {
+    0% { transform: translateY(-100%); opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { transform: translateY(1000%); opacity: 0; }
+  }
+
   .cyber-grid {
     background-image: 
       linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),

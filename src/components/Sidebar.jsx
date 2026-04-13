@@ -67,9 +67,9 @@ export default function Sidebar() {
             <AnimatePresence>
               {sidebarOpen && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2 flex-1 min-w-0 z-10">
-                  <span className="text-xs font-semibold tracking-widest uppercase">{label}</span>
+                  <span className="text-[10px] font-black tracking-[0.15em] uppercase font-tech">{label}</span>
                   {badge && (
-                    <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded-sm border border-primary/40 bg-primary/20 text-primary">
+                    <span className="ml-auto text-[8px] font-black px-1.5 py-0.5 rounded-sm border border-cyan-500/40 bg-cyan-500/20 text-cyan-400 font-tech animate-pulse">
                       {badge}
                     </span>
                   )}
@@ -134,8 +134,8 @@ export default function Sidebar() {
           <LogOut size={18} className="transition-transform group-hover:-translate-x-1" />
           <AnimatePresence>
             {sidebarOpen && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[10px] font-bold uppercase tracking-widest">
-                Disconnect
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[10px] font-black uppercase tracking-[0.2em] font-tech text-secondary/80">
+                DISCONNECT
               </motion.span>
             )}
           </AnimatePresence>

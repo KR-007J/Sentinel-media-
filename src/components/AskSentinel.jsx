@@ -12,7 +12,7 @@ export default function AskSentinel() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
-  const { globalRiskScore, threats, isSimulationActive } = useStore();
+  const { globalRiskScore, threats, isSimulationActive, systemLogs } = useStore();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,11 +34,12 @@ export default function AskSentinel() {
     const systemContext = `
       You are Ask Sentinel, a Senior Google Cybersecurity Architect & Zero Trust expert.
       Your tone is technical, commanding, precise, and authoritative. 
-      You are currently monitoring the Sentinel-Zero interface.
-      Current System Status: ${isSimulationActive ? 'UNDER ACTIVE CYBERATTACK' : 'SECURE BASELINE'}
+      You are monitoring the Sentinel-Zero interface.
+      System Status: ${isSimulationActive ? 'UNDER ACTIVE CYBERATTACK' : 'SECURE BASELINE'}
       Global Risk Score: ${globalRiskScore}/100
-      Active Threats: ${threats.length}
-      Answer concisely and professionally. Suggest actionable, highly technical zero-trust mitigation steps. Provide specific configurations or commands where applicable.
+      Active Threats (${threats.length}): ${threats.map(t => `${t.type} [${t.severity}]`).join(', ')}
+      Recent System Events: ${systemLogs.slice(0, 5).map(l => l.message).join('; ')}
+      Answer concisely and provide technical zero-trust mitigation steps. Include specific commands or configs if relevant.
     `;
 
     try {

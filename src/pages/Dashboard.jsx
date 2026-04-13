@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, Radio, Activity, Globe2, 
-  Terminal, Zap, ChevronRight, Share2, Eye,
-  Lock, Cpu, Network, ShieldCheck, Play, Square, Info
+  Terminal, Zap, Lock, Cpu, Network, ShieldCheck, Play, Square
 } from 'lucide-react';
 import StatsCard from '../components/StatsCard';
 import Globe from '../components/Globe';
@@ -17,21 +16,48 @@ export default function Dashboard() {
     threats, 
     globalRiskScore, 
     isSimulationActive, 
-    activeSimulationProfile,
     triggerSimulation, 
-    stopSimulation 
+    stopSimulation,
+    protectedSystem,
+    applyDefense,
+    resolveThreat,
+    systemLogs,
+    activeDefenses,
+    user
   } = useStore();
 
   const [metrics, setMetrics] = useState({ cpu: 42, network: 120, memory: 68 });
   const [slideIndex, setSlideIndex] = useState(0);
+  const [sidebarTab, setSidebarTab] = useState('threats');
   const [explainingId, setExplainingId] = useState(null);
   const [explanation, setExplanation] = useState(null);
+  const logEndRef = useRef(null);
 
-  // Auto-scroll critical alerts
-  const criticalThreats = threats.filter(t => t.severity === 'CRITICAL' || t.severity === 'Critical' || t.severity === 'High');
-  
+  // Auto-scroll logs
   useEffect(() => {
-    if (criticalThreats.length > 0) {
+    if (sidebarTab === 'logs' && logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [systemLogs, sidebarTab]);
+
+  // Optimized threat filtering
+  const criticalThreats = useMemo(() => 
+    threats.filter(t => {
+      const sev = (t.severity || "").toUpperCase();
+      return sev === 'CRITICAL' || sev === 'HIGH';
+    }), 
+    [threats]
+  );
+  
+  // Safe slide index management
+  useEffect(() => {
+    if (slideIndex >= criticalThreats.length && criticalThreats.length > 0) {
+      setSlideIndex(0);
+    }
+  }, [criticalThreats.length]);
+
+  useEffect(() => {
+    if (criticalThreats.length > 1) {
       const timer = setInterval(() => {
         setSlideIndex(prev => (prev + 1) % criticalThreats.length);
       }, 5000);
@@ -39,19 +65,20 @@ export default function Dashboard() {
     }
   }, [criticalThreats.length]);
 
-  // Simulated background drift for visual flair
+  // Simulated background telemetry
   useEffect(() => {
     const metricInterval = setInterval(() => {
       setMetrics(prev => ({
-        cpu: Math.min(100, Math.max(0, prev.cpu + (Math.random() - 0.5) * 5)),
+        cpu: Math.min(100, Math.max(10, prev.cpu + (Math.random() - 0.5) * 5)),
         network: Math.max(50, prev.network + (Math.random() - 0.5) * 20),
-        memory: Math.min(100, Math.max(0, prev.memory + (Math.random() - 0.5) * 2)),
+        memory: Math.min(90, Math.max(20, prev.memory + (Math.random() - 0.5) * 2)),
       }));
     }, 2000);
     return () => clearInterval(metricInterval);
   }, []);
 
   const handleExplain = async (threat) => {
+    if (explainingId === threat.id && explanation) return;
     setExplainingId(threat.id);
     setExplanation(null);
     try {
@@ -59,50 +86,57 @@ export default function Dashboard() {
       setExplanation(respObj);
     } catch (e) {
       setExplanation({
-        threatType: "Local Heuristics Fallback",
-        reason: "FAILED TO REACH AI CLUSTER. LOCAL HEURISTICS SUGGEST ABNORMAL VELOCITY.",
+        threatType: "Engine Sync Failure",
+        reason: "NEURAL CLUSTER UNREACHABLE. LOCAL HEURISTICS SUGGEST DATA ANOMALY.",
         confidence: "??%",
-        fix: "- Disconnect immediately\n- Verify API keys"
+        fix: "Check Sentinel Link status."
       });
     }
   };
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className={`space-y-8 pb-12 min-h-screen transition-colors duration-1000 ${isSimulationActive ? 'animate-critical' : ''}`}>
+      {isSimulationActive && <div className="scanner-line" />}
+      
       {/* SOC HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isSimulationActive ? 'bg-red-500 animate-ping' : 'bg-cyan-400 p-indicator'}`} />
+            <div className={`w-3 h-3 rounded-full ${isSimulationActive ? 'bg-red-500 animate-ping shadow-[0_0_15px_red]' : threats.length > 0 ? 'bg-yellow-500 shadow-[0_0_10px_#eab308]' : 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]'}`} />
             <h2 className="text-4xl font-black tracking-tighter font-tech uppercase grad-text">
-              {isSimulationActive ? 'SIMULATION ACTIVE' : 'SENTINEL PRIME'}
+              {threats.length === 0 ? 'SYSTEM SECURED' : isSimulationActive ? 'THREAT SIMULATION ACTIVE' : 'SENTINEL PRIME'}
             </h2>
           </div>
-          <p className="telemetry-label !text-cyan-400/60 flex items-center gap-2">
-            <Cpu size={12} /> SYSTEM UPTIME: 342:12:09 • LATENCY: {isSimulationActive ? '184MS' : '24MS'} • ENCRYPTION: AES-256
-          </p>
+          <div className="flex flex-col gap-1">
+            <p className="telemetry-label !text-cyan-400/60 flex items-center gap-2">
+              <Cpu size={12} /> PROTECTING: <span className="text-white bg-white/10 px-2 py-0.5 rounded italic border border-white/5">{protectedSystem}</span>
+            </p>
+            <p className="telemetry-label !text-cyan-400/40 flex items-center gap-2 text-[10px]">
+              OPERATOR: {user?.email || 'ANONYMOUS'} • NODES: 1492 • LATENCY: {isSimulationActive ? '184MS' : '24MS'}
+            </p>
+          </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800 p-1.5 rounded-xl">
           {isSimulationActive ? (
             <button 
               onClick={stopSimulation}
-              className="tech-button border-red-500/50 hover:bg-red-500/10 text-red-500"
+              className="tech-button border-red-500/50 hover:bg-red-500/10 text-red-500 !py-2 !px-4"
             >
               <Square size={14} className="mr-2" /> STOP SIMULATION
             </button>
           ) : (
-            <div className="flex gap-2">
+            <>
               {Object.keys(ATTACK_PROFILES).map(key => (
                 <button 
                   key={key}
                   onClick={() => triggerSimulation(key)}
-                  className="tech-button border-cyan-500/20 hover:border-cyan-400 text-[10px]"
+                  className="px-4 py-2 bg-slate-800/80 hover:bg-cyan-500 hover:text-slate-950 rounded-lg text-[10px] font-black tracking-widest transition-all uppercase"
                 >
-                  <Play size={10} className="mr-1" /> TEST {key.split('_')[0]}
+                  {key.split('_')[0]}
                 </button>
               ))}
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -112,18 +146,18 @@ export default function Dashboard() {
         
         {/* WORLD VIEW & RISK METER */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="glass-card min-h-[550px] relative overflow-hidden group">
+          <div className="glass-card min-h-[550px] relative overflow-hidden group border-slate-800 shadow-2xl">
             <div className="absolute top-6 left-6 z-10 space-y-4">
-              <div className="glass-card p-4 bg-slate-900/40 border-cyan-500/20 backdrop-blur-md">
-                <p className="telemetry-label mb-1 uppercase tracking-widest">Global Risk Distribution</p>
+              <div className="glass-card p-4 bg-slate-950/60 border-cyan-500/20 backdrop-blur-xl">
+                <p className="telemetry-label mb-1 uppercase tracking-widest text-[9px]">Global Risk Distribution</p>
                 <div className="flex items-end gap-2">
                   <span className="text-3xl font-black text-white">{threats.length}</span>
-                  <span className="text-[10px] text-cyan-400/60 pb-1 uppercase font-mono">Monitored Ident</span>
+                  <span className="text-[10px] text-cyan-400/60 pb-1 uppercase font-mono">Monitored Alerts</span>
                 </div>
               </div>
             </div>
 
-            <div className="absolute inset-0 flex items-center justify-center opacity-40">
+            <div className="absolute inset-0 flex items-center justify-center opacity-60">
                <Globe threats={threats} />
             </div>
 
@@ -133,25 +167,27 @@ export default function Dashboard() {
             </div>
 
             {/* HUD OVERLAYS */}
-            <div className="absolute bottom-6 right-6 z-10 glass-card p-4 bg-slate-900/80 border-cyan-500/10 w-72">
-              <p className="telemetry-label mb-4">Neural Engine Telemetry</p>
+            <div className="absolute bottom-6 right-6 z-10 glass-card p-5 bg-slate-950/80 border-slate-800 w-72 backdrop-blur-xl">
+              <p className="telemetry-label mb-4 text-[9px] flex items-center gap-2">
+                <Activity size={10} className="text-cyan-400" /> Neural Engine Telemetry
+              </p>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex justify-between text-[9px] font-mono text-slate-400 uppercase">
+                  <div className="flex justify-between text-[8px] font-mono text-slate-500 uppercase tracking-widest">
                     <span>Inference Load</span>
-                    <span>{metrics.cpu.toFixed(1)}%</span>
+                    <span className="text-cyan-400">{metrics.cpu.toFixed(1)}%</span>
                   </div>
                   <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
                     <motion.div 
-                      className="h-full bg-cyan-500 shadow-[0_0_5px_rgba(6,182,212,0.8)]"
+                      className="h-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
                       animate={{ width: `${metrics.cpu}%` }}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between text-[9px] font-mono text-slate-400 uppercase">
-                    <span>Ingress Velocity</span>
-                    <span>{metrics.network.toFixed(0)} E/SEC</span>
+                  <div className="flex justify-between text-[8px] font-mono text-slate-500 uppercase tracking-widest">
+                    <span>Ingress Peak</span>
+                    <span className="text-purple-400">{metrics.network.toFixed(0)} PPS</span>
                   </div>
                   <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
                     <motion.div 
@@ -165,67 +201,85 @@ export default function Dashboard() {
           </div>
 
           {/* CRITICAL ALERTS SLIDESHOW */}
-          <div className="glass-card overflow-hidden border-red-500/10">
-            <div className="p-4 border-b border-white/5 flex items-center justify-between bg-red-950/10">
+          <div className="glass-card overflow-hidden border-red-500/10 bg-slate-950/40">
+            <div className="p-3 border-b border-white/5 flex items-center justify-between bg-red-950/10">
               <div className="flex items-center gap-3">
-                <Activity size={16} className={isSimulationActive ? "text-red-500 animate-pulse" : "text-cyan-400"} />
-                <h3 className="text-xs font-bold tracking-[0.2em] font-tech uppercase">Priority Intelligence Feed</h3>
+                <ShieldAlert size={14} className={isSimulationActive ? "text-red-500 animate-pulse" : "text-cyan-400"} />
+                <h3 className="text-[10px] font-black tracking-[0.3em] font-tech uppercase text-white/80">Priority Intelligence Feed</h3>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 {criticalThreats.slice(0, 5).map((_, i) => (
-                  <div 
+                  <button 
                     key={i} 
+                    onClick={() => setSlideIndex(i)}
                     className={`h-0.5 transition-all duration-500 ${i === slideIndex ? 'w-8 bg-red-500 shadow-[0_0_8px_red]' : 'w-2 bg-slate-800'}`} 
                   />
                 ))}
               </div>
             </div>
 
-            <div className="p-8 h-[240px] relative bg-gradient-to-r from-red-500/5 to-transparent">
+            <div className="p-8 h-[220px] relative bg-gradient-to-r from-red-500/5 to-transparent flex flex-col justify-center">
               <AnimatePresence mode="wait">
                 {criticalThreats.length > 0 ? (
                   <motion.div
                     key={slideIndex}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="h-full flex flex-col justify-center gap-4"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-4"
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] text-red-400 font-mono tracking-widest uppercase flex items-center gap-2">
-                           <ShieldAlert size={12} className="animate-pulse" /> TARGET INFRASTRUCTURE UNDER ATTACK
+                        <span className="text-[9px] text-red-500 font-black tracking-[0.3em] uppercase flex items-center gap-2">
+                           <Zap size={10} /> CRITICAL VECTOR DETECTED
                         </span>
-                        <h4 className="text-3xl font-black text-white font-tech uppercase tracking-tighter">
-                          {criticalThreats[slideIndex]?.type || 'UNKNOWN VECTOR'}
+                        <h4 className="text-4xl font-black text-white font-tech uppercase tracking-tighter grad-text">
+                          {criticalThreats[slideIndex]?.type || 'ANOMALOUS DATA'}
                         </h4>
                       </div>
-                      <div className="px-4 py-1 bg-red-500/20 border border-red-500/40 rounded-sm text-[10px] font-black text-red-400 tracking-tighter">
+                      <div className="px-4 py-2 bg-red-500/20 border border-red-500/40 rounded-lg text-[10px] font-black text-red-400 tracking-widest shadow-lg">
                         {Math.round(criticalThreats[slideIndex]?.risk_score || 85)}% RISK
                       </div>
                     </div>
                     
-                    <p className="text-sm text-slate-400 line-clamp-2 max-w-3xl font-medium leading-relaxed">
+                    <p className="text-xs text-slate-400 line-clamp-2 max-w-4xl font-bold leading-relaxed tracking-tight uppercase">
                       {criticalThreats[slideIndex]?.description}
                     </p>
 
-                    <div className="flex gap-4 mt-2">
-                       <button className="tech-button border-red-500/40 text-red-500 hover:bg-red-500/10">
-                         <span>REVOKE ACCESS</span>
+                    <div className="flex gap-4 pt-2">
+                       <button 
+                         onClick={() => resolveThreat(criticalThreats[slideIndex].id)}
+                         className="px-6 py-2.5 bg-red-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                       >
+                         NEUTRALIZE
                        </button>
                        <button 
                         onClick={() => handleExplain(criticalThreats[slideIndex])}
-                        className="tech-button !bg-white/5 border-white/10 hover:border-cyan-400"
+                        className="px-6 py-2.5 bg-slate-900 border border-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:border-cyan-500/40 transition-all"
                       >
-                         <Zap size={14} className="mr-2 text-yellow-400" /> EXPLAIN WITH AI
+                         AUDIT PAYLOAD
                        </button>
                     </div>
                   </motion.div>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-600 gap-4">
-                    <ShieldCheck size={48} className="opacity-10" />
-                    <span className="font-mono text-xs uppercase tracking-[0.4em]">All Vectors Secure</span>
-                  </div>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full flex flex-col items-center justify-center gap-4"
+                  >
+                    <div className="relative">
+                      <motion.div 
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.4, 0.1] }}
+                        transition={{ repeat: Infinity, duration: 4 }}
+                        className="absolute inset-0 bg-cyan-500 rounded-full blur-3xl"
+                      />
+                      <ShieldCheck size={56} className="text-cyan-400 relative z-10" />
+                    </div>
+                    <div className="text-center space-y-1">
+                      <span className="font-tech text-xs uppercase tracking-[0.5em] text-cyan-400 font-black block">System Nominal</span>
+                      <p className="text-[9px] text-slate-500 uppercase tracking-widest">Continuous intelligence loop active</p>
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
@@ -235,53 +289,166 @@ export default function Dashboard() {
         {/* RIGHT SIDEBAR: TACTICAL FEED & AI ANALYSIS */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           <div className="glass-card flex-1 flex flex-col min-h-[550px] border-cyan-500/10">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-slate-900/20">
-              <div className="flex items-center gap-3">
-                <Terminal size={18} className="text-cyan-400" />
-                <h3 className="text-sm font-bold tracking-widest font-tech uppercase">Neural Core Log</h3>
+            <div className="p-6 border-b border-white/5 bg-slate-900/20">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Terminal size={18} className="text-cyan-400" />
+                  <h3 className="text-sm font-bold tracking-widest font-tech uppercase">Neural Core Log</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                   <span className="text-[8px] font-mono text-cyan-500/60 uppercase">Live</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                 <span className="text-[8px] font-mono text-cyan-500/60 uppercase">Live</span>
+              <div className="flex gap-2 p-1 bg-black/40 rounded-lg border border-white/5">
+                <button 
+                  onClick={() => setSidebarTab('threats')}
+                  className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded transition-all ${sidebarTab === 'threats' ? 'bg-cyan-500 text-slate-900 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-400'}`}
+                >
+                  Active Threats ({threats.length})
+                </button>
+                <button 
+                  onClick={() => setSidebarTab('logs')}
+                  className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded transition-all ${sidebarTab === 'logs' ? 'bg-cyan-500 text-slate-900 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-400'}`}
+                >
+                  System Logs ({systemLogs.length})
+                </button>
               </div>
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-black/20">
-              {threats.map((threat, idx) => (
-                <motion.div 
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  key={threat.id} 
-                  className={`p-4 rounded-sm border transition-all group relative overflow-hidden ${
-                    threat.severity === 'CRITICAL' || threat.severity === 'Critical'
-                    ? 'bg-red-500/5 border-red-500/20 hover:border-red-500/50' 
-                    : 'bg-slate-900/40 border-white/5 hover:border-cyan-500/30'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className={`text-[9px] font-black p-1 px-2 rounded-sm ${
-                      threat.severity === 'CRITICAL' || threat.severity === 'Critical'
-                      ? 'bg-red-500/20 text-red-400' 
-                      : 'bg-cyan-500/10 text-cyan-400'
-                    }`}>
-                      {threat.severity?.toUpperCase()}
-                    </span>
-                    <span className="text-[8px] font-mono text-slate-600 uppercase">Hash: {threat.id.slice(0, 8)}</span>
-                  </div>
-                  <p className="text-xs font-bold text-slate-100 uppercase mb-1 font-tech tracking-tight">{threat.type}</p>
-                  <p className="text-[10px] text-slate-500 line-clamp-1 italic mb-2 tracking-tight">"{threat.description}"</p>
-                  
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={() => handleExplain(threat)}
-                      className="text-[9px] font-black text-cyan-400 uppercase tracking-widest hover:underline"
+              {sidebarTab === 'threats' ? (
+                threats.length > 0 ? (
+                  threats.map((threat, idx) => (
+                    <motion.div 
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      key={threat.id} 
+                      className={`p-4 rounded-sm border transition-all group relative overflow-hidden ${
+                        threat.severity === 'CRITICAL' || threat.severity === 'Critical'
+                        ? 'bg-red-500/5 border-red-500/20 hover:border-red-500/50' 
+                        : 'bg-slate-900/40 border-white/5 hover:border-cyan-500/30'
+                      }`}
                     >
-                      Audit Payload
-                    </button>
+                      <div className="flex justify-between items-start mb-2">
+                        <span className={`text-[9px] font-black p-1 px-2 rounded-sm ${
+                          threat.severity === 'CRITICAL' || threat.severity === 'Critical'
+                          ? 'bg-red-500/20 text-red-400' 
+                          : 'bg-cyan-500/10 text-cyan-400'
+                        }`}>
+                          {threat.severity?.toUpperCase()}
+                        </span>
+                        <span className="text-[8px] font-mono text-slate-600 uppercase">Hash: {threat.id.slice(0, 8)}</span>
+                      </div>
+                      <p className="text-xs font-bold text-slate-100 uppercase mb-1 font-tech tracking-tight">{threat.type || threat.platform || 'SECURITY_ALERT'}</p>
+                      <p className="text-[10px] text-slate-500 line-clamp-1 italic mb-2 tracking-tight">"{threat.description || threat.reason || 'No detailed analysis available'}"</p>
+                      
+                      <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => handleExplain(threat)}
+                          className="text-[9px] font-black text-cyan-400 uppercase tracking-widest hover:underline flex items-center gap-1"
+                        >
+                          <Zap size={10} /> Audit Payload
+                        </button>
+                        <button 
+                          onClick={() => resolveThreat(threat.id)}
+                          className="text-[9px] font-black text-emerald-400 uppercase tracking-widest hover:underline flex items-center gap-1"
+                        >
+                          <ShieldCheck size={10} /> Secure Node
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-600 gap-4 opacity-30 mt-10">
+                    <ShieldCheck size={32} />
+                    <span className="text-[8px] font-mono uppercase tracking-[0.2em]">Zero Threats detected</span>
                   </div>
-                </motion.div>
-              ))}
+                )
+              ) : (
+                systemLogs.map((log, idx) => (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    key={log.id} 
+                    className="flex gap-4 text-[10px] font-mono border-b border-white/5 pb-2 last:border-0"
+                  >
+                    <span className="text-slate-600 shrink-0">[{new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}]</span>
+                    <span className={`${
+                      log.type === 'alert' ? 'text-red-500' :
+                      log.type === 'success' ? 'text-emerald-500' :
+                      'text-cyan-500/70'
+                    }`}>
+                      {log.message}
+                    </span>
+                  </motion.div>
+                ))
+              )}
+              <div ref={logEndRef} />
+            </div>
+          </div>
+
+          {/* DEFENSE MATRIX PANEL */}
+          <div className="glass-card flex-none border-cyan-500/10 bg-slate-900/40 mb-6">
+            <div className="p-4 border-b border-white/5 bg-cyan-500/5">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-cyan-400" />
+                <h3 className="text-[10px] font-bold tracking-[0.2em] font-tech uppercase">Active Defense Matrix</h3>
+              </div>
+            </div>
+            <div className="p-4 grid grid-cols-2 gap-2">
+              <button 
+                onClick={() => applyDefense('FIREWALL')}
+                className={`p-3 border rounded transition-all text-left group ${
+                  activeDefenses.includes('FIREWALL') 
+                  ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
+                  : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
+                }`}
+              >
+                <Lock size={14} className={`${activeDefenses.includes('FIREWALL') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
+                <span className="block text-[10px] font-black uppercase tracking-tighter">Enable Firewall</span>
+                <span className={`text-[8px] uppercase font-mono ${activeDefenses.includes('FIREWALL') ? 'text-slate-800' : 'text-slate-500'}`}>Blocks SQLi/XSS</span>
+              </button>
+              
+              <button 
+                onClick={() => applyDefense('2FA')}
+                className={`p-3 border rounded transition-all text-left group ${
+                  activeDefenses.includes('2FA') 
+                  ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
+                  : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
+                }`}
+              >
+                <Radio size={14} className={`${activeDefenses.includes('2FA') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
+                <span className="block text-[10px] font-black uppercase tracking-tighter">Enforce 2FA</span>
+                <span className={`text-[8px] uppercase font-mono ${activeDefenses.includes('2FA') ? 'text-slate-800' : 'text-slate-500'}`}>Stops Brute Force</span>
+              </button>
+
+              <button 
+                onClick={() => applyDefense('BLOCK_IP')}
+                className={`p-3 border rounded transition-all text-left group ${
+                  activeDefenses.includes('BLOCK_IP') 
+                  ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
+                  : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
+                }`}
+              >
+                <ShieldAlert size={14} className={`${activeDefenses.includes('BLOCK_IP') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
+                <span className="block text-[10px] font-black uppercase tracking-tighter">Block Identity</span>
+                <span className={`text-[8px] uppercase font-mono ${activeDefenses.includes('BLOCK_IP') ? 'text-slate-800' : 'text-slate-500'}`}>IPS/ASN Filtering</span>
+              </button>
+
+              <button 
+                onClick={() => applyDefense('RATE_LIMIT')}
+                className={`p-3 border rounded transition-all text-left group ${
+                  activeDefenses.includes('RATE_LIMIT') 
+                  ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
+                  : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
+                }`}
+              >
+                <Activity size={14} className={`${activeDefenses.includes('RATE_LIMIT') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
+                <span className="block text-[10px] font-black uppercase tracking-tighter">Rate Limiting</span>
+                <span className={`text-[8px] uppercase font-mono ${activeDefenses.includes('RATE_LIMIT') ? 'text-slate-800' : 'text-slate-500'}`}>Mitigates Bots</span>
+              </button>
             </div>
           </div>
 
@@ -292,7 +459,7 @@ export default function Dashboard() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="glass-card p-6 border-yellow-500/30 bg-yellow-500/5 relative overflow-hidden"
+                className="glass-card p-6 border-yellow-500/30 bg-yellow-500/5 relative overflow-hidden mb-6"
               >
                 <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500" />
                 <div className="flex items-center justify-between mb-4">
