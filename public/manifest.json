@@ -1,19 +1,22 @@
 {
-  "manifest_version": 3,
   "name": "Sentinel-Zero",
-  "version": "1.0.0",
-  "description": "Cyber-Security War Room Dashboard and Digital Asset Guardian",
-  "action": {
-    "default_title": "Launch Sentinel-Zero"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "permissions": [
-    "tabs",
-    "storage"
-  ],
-  "chrome_url_overrides": {
-    "newtab": "index.html"
-  }
+  "short_name": "Sentinel",
+  "description": "Enterprise AI Security Hub for Digital Safety.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }

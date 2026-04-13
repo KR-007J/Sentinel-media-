@@ -18,6 +18,7 @@ export const useStore = create((set, get) => ({
   threats: [],
   assets: [],
   systemLogs: [],
+  strategicInsights: "SYSTEM NOMINAL: No critical vulnerabilities detected in the current layer.",
   
   // LIMITS
   MAX_LOGS: 50,
@@ -118,13 +119,14 @@ export const useStore = create((set, get) => ({
     const updatedThreats = [threat, ...state.threats].slice(0, state.MAX_THREATS);
     
     // Recalculate System Status
-    let newStatus = 'SECURE';
-    if (updatedThreats.length > 5 || state.globalRiskScore > 60) newStatus = 'CRITICAL';
-    else if (updatedThreats.length > 0 || state.isSimulationActive) newStatus = 'UNDER_ATTACK';
+    const insight = newStatus === 'CRITICAL' ? "CRITICAL ALERT: Strategic assets are under active siege. Immediate lockdown and IP blacklisting recommended." : 
+                    newStatus === 'UNDER_ATTACK' ? "ADVISORY: Targeted probes detected. Analyze source geography and verify Auth integrity." :
+                    "SYSTEM BASELINE SECURED: Continuous neural monitoring active.";
 
     return {
       threats: updatedThreats,
       systemStatus: newStatus,
+      strategicInsights: insight,
       stats: { ...state.stats, totalIntercepts: state.stats.totalIntercepts + 1 }
     };
   }),
@@ -336,14 +338,15 @@ export const useStore = create((set, get) => ({
     // Recalculate System Status and Score
     const newScore = Math.max(0, globalRiskScore - (threat.risk_score || 10) / 2);
     
-    let newStatus = 'SECURE';
-    if (newThreats.length > 5 || newScore > 60) newStatus = 'CRITICAL';
-    else if (newThreats.length > 0 || isSimulationActive) newStatus = 'UNDER_ATTACK';
+    const insight = newStatus === 'CRITICAL' ? "CRITICAL ALERT: Multiple threat vectors remain. Prioritize core asset isolation." : 
+                    newStatus === 'UNDER_ATTACK' ? "MITIGATION IN PROGRESS: Perimeter stabilized. Verify lateral movement logs." :
+                    "THREAT NEUTRALIZED: Security posture restored to baseline.";
 
     set({ 
       threats: newThreats.slice(0, MAX_THREATS),
       globalRiskScore: newScore,
-      systemStatus: newStatus
+      systemStatus: newStatus,
+      strategicInsights: insight
     });
   },
 

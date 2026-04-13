@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -436,6 +436,19 @@ export default function Dashboard() {
                   <h3 className="text-sm font-bold tracking-widest font-tech uppercase">Neural Core Log</h3>
                 </div>
                 <div className="flex items-center gap-2">
+                   <button 
+                    onClick={() => {
+                      const blob = new Blob([JSON.stringify({ logs: systemLogs, reportDate: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `sentinel-audit-${Date.now()}.json`;
+                      a.click();
+                    }}
+                    className="text-[8px] font-black font-tech uppercase bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700 hover:text-white hover:border-cyan-500/50 transition-all"
+                   >
+                     Export Audit
+                   </button>
                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                    <span className="text-[8px] font-mono text-cyan-500/60 uppercase">Live</span>
                 </div>

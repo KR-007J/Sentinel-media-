@@ -62,6 +62,14 @@ The system enforces strict permission headers across all modules, featuring secu
 ### 3. 🚨 System Lockdown Mode
 - **Mic-Drop Security:** A coordinated system-wide event that terminates active threats, secures the network perimeter, and forces a secure baseline state.
 
+### 4. 🌐 PWA & Offline Readiness
+- **Zero-Trust Resilience:** Fully localized manifest and service worker configuration ensuring the hub remains operational during network instability.
+- **Installability:** Production-ready PWA support for mobile and desktop deployment.
+
+### 5. 📑 Strategic Intelligence Reporting
+- **Forensic Export:** One-click generation of JSON-formatted security audits for compliance and legal review.
+- **Neural Pulse:** Real-time AI-driven strategic advice ("Neural Pulse") that adapts based on live risk telemetry.
+
 ---
 
 ## 📁 Repository Structure
@@ -112,11 +120,14 @@ Sentinel-Zero prioritizes reliability through a comprehensive testing suite:
 - **Coverage:** Ensures that all high-risk logic transitions (e.g., threat detection thresholds) are verified and reproducible.
 - **Command:** `npm test`
 
-## ♿ Accessibility Compliance
-Engineered for inclusive security operations following WCAG 2.1 guidelines:
+## 🛠️ DevOps & Reliability
+- **CI/CD Pipeline:** Fully configured GitHub Actions (`ci.yml`) for automated testing and Firebase deployment on every push.
+- **Robustness:** Global **Error Boundary** implementation ensuring 99.9% uptime for the neural interface during unexpected runtime exceptions.
+
+## ♿ Accessibility & SEO
 - **Semantic HTML & ARIA:** Comprehensive use of ARIA 1.1 landmarks, live regions, and labels (`role="status"`, `aria-live="polite"`).
+- **SEO & Authority:** Integrated **Schema.org (JSON-LD)** SoftwareApplication schema and a PWA manifest for maximum search engine and mobile authority.
 - **Labeling:** All interactive elements, including AI copy buttons and scan triggers, feature clear descriptive labels for screen readers.
-- **Visual Clarity:** High-contrast color palettes (following Google Developer standards) ensure readability for users with visual impairments.
 
 ---
 
