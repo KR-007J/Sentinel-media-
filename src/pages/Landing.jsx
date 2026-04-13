@@ -54,7 +54,7 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-slate-800 bg-slate-900/60 backdrop-blur-xl text-[10px] font-black uppercase tracking-[0.4em] font-tech text-cyan-400">
             <Radar size={14} className="animate-spin-slow text-cyan-500" />
-            Sentinel Zero | Y-Combinator W26 Finalist
+            Sentinel Zero | Production Environment Secured
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}
@@ -227,7 +227,7 @@ export default function Landing() {
             <span className="cursor-pointer hover:text-cyan-400 transition-colors">Terms</span>
             <span className="cursor-pointer hover:text-cyan-400 transition-colors">Nodes</span>
           </div>
-          <p className="text-[10px] font-tech text-slate-600">BUILD v3.0 // SHIELD_ACTIVE</p>
+          <p className="text-[10px] font-tech text-slate-600">BUILD v3.0 // © 2026 Krish Joshi. All rights reserved.</p>
         </div>
       </footer>
 

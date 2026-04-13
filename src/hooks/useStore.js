@@ -40,6 +40,20 @@ export const useStore = create((set, get) => ({
   scanProgress: 0,
   scanResult: null,
   sidebarOpen: true,
+  isRoleTransitioning: false,
+  
+  // ENTERPRISE EXTENSIONS
+  isLockdownActive: false,
+  sessionInfo: {
+    authMethod: 'OIDC/Google',
+    sessionRisk: 'LOW',
+    deviceTrust: 'VERIFIED',
+    location: 'US-EAST-1 (SECURE)'
+  },
+  activeOperators: [
+    { id: 1, name: 'Operative_Delta', role: 'ANALYST', status: 'ACTIVE', lastAction: 'NEURAL_LINK_ESTABLISHED' },
+    { id: 2, name: 'Operative_Sigma', role: 'VIEWER', status: 'MONITORING', lastAction: 'AUDITING_LOGS' }
+  ],
 
   // RBAC HELPER
   checkPermission: (action) => {
@@ -96,7 +110,8 @@ export const useStore = create((set, get) => ({
     });
 
     if (isBlocked) {
-      state.addLog(`AUTO-BLOCK: ${threat.type} neutralized by active defense: ${activeDefenses.find(d => true)}`, 'success');
+      const srcIP = `${10+Math.floor(Math.random()*240)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+      state.addLog(`[WAF] BLOCKED ${threat.type} | src:${srcIP} → tgt:/api/v1/auth | defense:${activeDefenses.find(d => true)} | status:DROPPED`, 'success');
       return { stats: { ...state.stats, totalIntercepts: state.stats.totalIntercepts + 1 } };
     }
 
@@ -117,7 +132,7 @@ export const useStore = create((set, get) => ({
   // DEFENSE ACTIONS
   applyDefense: (actionType) => {
     if (!get().checkPermission('APPLY_DEFENSE')) {
-      get().addLog(`ACCESS DENIED: Role ${get().role} cannot modify defenses.`, 'alert');
+      get().addLog(`[RBAC] DENY modifyDefense() | operator:${get().user?.name || 'UNKNOWN'} | role:${get().role} | required:ADMIN`, 'alert');
       return;
     }
 
@@ -125,7 +140,7 @@ export const useStore = create((set, get) => ({
     
     if (activeDefenses.includes(actionType)) {
       set({ activeDefenses: activeDefenses.filter(d => d !== actionType) });
-      addLog(`MODIFICATION: Defensive vector ${actionType} disengaged.`, 'neutral');
+      addLog(`[DEFENSE] DISENGAGE ${actionType} | operator:${get().user?.name || 'SYS'} | scope:GLOBAL | status:INACTIVE`, 'neutral');
       return;
     }
 
@@ -140,7 +155,7 @@ export const useStore = create((set, get) => ({
           return !type.includes('SQL') && !type.includes('XSS');
         });
         scoreReduction = 25;
-        defenseMsg = "Strategic Firewall Engaged. Filtered Injection Vectors.";
+        defenseMsg = "FIREWALL engaged | filtering:SQLi,XSS | target:/api/* | mode:STRICT";
         break;
       case '2FA':
         newThreats = newThreats.filter(t => {
@@ -148,7 +163,7 @@ export const useStore = create((set, get) => ({
           return !type.includes('BRUTE FORCE') && !type.includes('LOGIN');
         });
         scoreReduction = 20;
-        defenseMsg = "MFA Enforcement Active. Identity Vectors Secured.";
+        defenseMsg = "2FA enforced | scope:all-endpoints | auth:TOTP+SMS | brute-force:BLOCKED";
         break;
       case 'BLOCK_IP':
         newThreats = newThreats.filter(t => {
@@ -157,7 +172,7 @@ export const useStore = create((set, get) => ({
           return !type.includes('VPN') && !type.includes('GEO') && !desc.includes('IP');
         });
         scoreReduction = 15;
-        defenseMsg = "IP Intelligence Applied. Malicious Proxies Blacklisted.";
+        defenseMsg = "IP_BLOCK active | blacklist:TOR,VPN,PROXY | geo-fence:ENABLED | ASN:filtered";
         break;
       case 'RATE_LIMIT':
         newThreats = newThreats.filter(t => {
@@ -165,14 +180,14 @@ export const useStore = create((set, get) => ({
           return !type.includes('BOT') && !type.includes('SCRAPING');
         });
         scoreReduction = 30;
-        defenseMsg = "Throughput Throttled. Automated Bot Activity Neutralized.";
+        defenseMsg = "RATE_LIMIT active | threshold:100req/min | bots:DROPPED | captcha:ENABLED";
         break;
       default:
         break;
     }
 
     const isSecure = newThreats.length === 0;
-    addLog(`STRATEGIC DEFENSE: ${defenseMsg}`, 'success');
+    addLog(`[DEFENSE] ENGAGE | ${defenseMsg}`, 'success');
     
     set({ 
       activeDefenses: [...activeDefenses, actionType],
@@ -228,27 +243,31 @@ export const useStore = create((set, get) => ({
       // 3. Setup Simulator
       const simulator = new AttackSimulator((event) => {
         const { addThreat, addLog } = get();
+        const randPort = [443, 8080, 3306, 5432, 22, 80][Math.floor(Math.random()*6)];
+        const srcIP = `${10+Math.floor(Math.random()*240)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
         
         switch(event.type) {
           case 'SIM_START':
-            addLog(event.message, 'neutral');
+            addLog(`[SIM] INIT | profile:${event.message.split(':')[1]?.trim() || 'UNKNOWN'} | mode:ADVERSARIAL | src:${srcIP}`, 'neutral');
             break;
           case 'STATUS_UPDATE':
-            addLog(`ENGINE: ${event.message}`, 'neutral');
+            addLog(`[IDS] SCAN | ${event.message} | port:${randPort} | proto:TCP`, 'neutral');
             break;
           case 'ANOMALY_DETECTED':
-            addLog(`ANOMALY: ${event.message}`, 'suspicious');
+            addLog(`[IDS] ALERT | ${event.message} | src:${srcIP}:${randPort} | confidence:HIGH`, 'suspicious');
             set(state => ({ globalRiskScore: Math.min(100, state.globalRiskScore + 5) }));
             break;
-          case 'THREAT_DETECTED':
+          case 'THREAT_DETECTED': {
+            const flags = (event.threat.flags || []).join(',');
             addThreat(event.threat);
-            addLog(`CRITICAL: ${event.threat.type} verified. Risk escalated.`, 'alert');
+            addLog(`[SIEM] CRITICAL | type:${event.threat.type} | src:${srcIP} → tgt:0.0.0.0:${randPort} | flags:[${flags}] | risk:${event.threat.risk_score}%`, 'alert');
             set(state => ({ 
               globalRiskScore: Math.min(100, state.globalRiskScore + (event.threat.risk_score || 10) / 2)
             }));
             break;
+          }
           case 'SIM_STOP':
-            addLog(event.message, 'success');
+            addLog(`[SIM] TERMINATE | all vectors neutralized | system:BASELINE | risk:NOMINAL`, 'success');
             set({ isSimulationActive: false, activeSimulationProfile: null });
             break;
         }
@@ -265,7 +284,7 @@ export const useStore = create((set, get) => ({
 
           if (eventType === 'INSERT') {
             get().addThreat(newRow);
-            addLog(`INCOMING: ${newRow.type || 'Anomaly'} detected via Supabase Link.`, 'neutral');
+            addLog(`[FEED] INGEST | type:${newRow.type || 'Anomaly'} | src:supabase-realtime | severity:${newRow.severity || 'UNKNOWN'} | status:ACTIVE`, 'neutral');
           } else if (eventType === 'UPDATE') {
             set({ threats: currentThreats.map(t => t.id === newRow.id ? newRow : t).slice(0, MAX_THREATS) });
           } else if (eventType === 'DELETE') {
@@ -303,7 +322,7 @@ export const useStore = create((set, get) => ({
 
   resolveThreat: (threatId) => {
     if (!get().checkPermission('RESOLVE_THREAT')) {
-      get().addLog(`ACCESS DENIED: Role ${get().role} cannot neutralize threats.`, 'alert');
+      get().addLog(`[RBAC] DENY resolveThreat() | operator:${get().user?.name || 'UNKNOWN'} | role:${get().role} | required:ADMIN`, 'alert');
       return;
     }
 
@@ -311,7 +330,7 @@ export const useStore = create((set, get) => ({
     const threat = threats.find(t => t.id === threatId);
     if (!threat) return;
 
-    addLog(`RESOLVED: ${threat.type} neutralized by human override.`, 'success');
+    addLog(`[SOAR] RESOLVE | type:${threat.type} | hash:${threatId.slice(0,8)} | operator:${get().user?.name || 'SYS'} | method:MANUAL | status:NEUTRALIZED`, 'success');
     const newThreats = threats.filter(t => t.id !== threatId);
     
     // Recalculate System Status and Score
@@ -330,7 +349,7 @@ export const useStore = create((set, get) => ({
 
   triggerSimulation: (profileKey) => {
     if (!get().checkPermission('MANAGE_SIMULATION')) {
-      get().addLog(`ACCESS DENIED: Role ${get().role} cannot trigger simulations.`, 'alert');
+      get().addLog(`[RBAC] DENY triggerSimulation(${profileKey}) | operator:${get().user?.name || 'UNKNOWN'} | role:${get().role} | required:ADMIN`, 'alert');
       return;
     }
 
@@ -382,9 +401,42 @@ export const useStore = create((set, get) => ({
     set({ isAuthenticated: false, user: null, role: 'VIEWER' });
   },
 
+  setRole: (rawRole) => {
+    const currentRole = get().role;
+    let newRole = rawRole;
+    
+    if (!['ADMIN', 'ANALYST', 'VIEWER'].includes(newRole)) {
+      newRole = 'VIEWER';
+      get().addLog('[ACCESS CONTROL] ⚠ Invalid role detected → defaulting to VIEWER', 'alert');
+    }
+
+    if (currentRole === newRole || get().isRoleTransitioning) return;
+    
+    set({ isRoleTransitioning: true, roleTransitionTarget: newRole });
+    get().addLog('[ACCESS CONTROL ENGINE] → Validating Operator Credentials...', 'neutral');
+
+    setTimeout(() => {
+      get().addLog('[ACCESS CONTROL ENGINE] → Synchronizing Permission Matrix...', 'neutral');
+    }, 200);
+
+    setTimeout(() => {
+      const oldScore = get().globalRiskScore;
+      localStorage.setItem('sentinel_role', newRole);
+      set({ role: newRole, isRoleTransitioning: false, roleTransitionTarget: null });
+      // Risk score flicker on role change
+      set({ globalRiskScore: Math.min(100, oldScore + 15) });
+      setTimeout(() => set({ globalRiskScore: oldScore }), 1200);
+      const action = newRole === 'ADMIN' ? 'Privilege Escalation Granted' : newRole === 'ANALYST' ? 'Standard Access Configured' : 'Read-Only Access Applied';
+      get().addLog(`[ACCESS CONTROL ENGINE] → ${action}: ${newRole}`, 'alert');
+      if (newRole === 'ADMIN') {
+        get().addLog('[SYSTEM] ⚠ Elevated privileges may impact system stability', 'alert');
+      }
+    }, 700);
+  },
+
   startScan: () => {
     if (!get().checkPermission('RUN_SCAN')) {
-      get().addLog(`ACCESS DENIED: Role ${get().role} cannot initiate neural scans.`, 'alert');
+      get().addLog(`[RBAC] DENY startScan() | operator:${get().user?.name || 'UNKNOWN'} | role:${get().role} | required:ADMIN|ANALYST`, 'alert');
       return;
     }
     set({ isScanning: true, scanProgress: 0, scanResult: null });
@@ -392,4 +444,52 @@ export const useStore = create((set, get) => ({
   setScanProgress: (p) => set({ scanProgress: p }),
   finishScan: (result) => set({ isScanning: false, scanProgress: 100, scanResult: result }),
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
+
+  // ENTERPRISE ACTIONS
+  toggleLockdown: () => {
+    if (!get().checkPermission('APPLY_DEFENSE')) return;
+    const newState = !get().isLockdownActive;
+    set({ isLockdownActive: newState });
+
+    if (newState) {
+      get().addLog('[LOCKDOWN] → Initiating System Lockdown...', 'alert');
+      setTimeout(() => get().addLog('[LOCKDOWN] → Terminating active threat vectors...', 'alert'), 300);
+      setTimeout(() => get().addLog('[LOCKDOWN] → Securing network perimeter...', 'alert'), 600);
+      setTimeout(() => {
+        set({ systemStatus: 'CRITICAL', globalRiskScore: Math.max(80, get().globalRiskScore) });
+        get().addLog('[LOCKDOWN] → System Status: LOCKED — All external access denied', 'alert');
+      }, 900);
+    } else {
+      get().addLog('[LOCKDOWN] → Releasing system lockdown...', 'success');
+      setTimeout(() => {
+        set({ systemStatus: 'SECURE', globalRiskScore: 10 });
+        get().addLog('[LOCKDOWN] → Perimeter restored. Status: SECURE', 'success');
+      }, 400);
+    }
+  },
+
+  updateSessionRisk: (risk) => set({ sessionInfo: { ...get().sessionInfo, sessionRisk: risk.toUpperCase() } }),
+  
+  simulateOperatorActivity: () => {
+    const operators = get().activeOperators;
+    const opIdx = Math.floor(Math.random() * operators.length);
+    const randomOp = operators[opIdx];
+    const endpoints = ['/api/v1/auth', '/api/v1/users', '/api/v2/threats', '/admin/config', '/api/v1/logs', '/health'];
+    const srcIPs = ['10.0.12.44', '172.16.8.101', '192.168.1.55', '10.0.3.200'];
+    const activities = [
+      { action: 'GET /api/v1/logs?severity=CRITICAL', label: 'AUDIT_LOG_REVIEW' },
+      { action: `POST /api/v2/threats/verify | src:${srcIPs[Math.floor(Math.random()*4)]}`, label: 'THREAT_VERIFICATION' },
+      { action: `PATCH ${endpoints[Math.floor(Math.random()*6)]} | scope:firewall-rules`, label: 'RULE_UPDATE' },
+      { action: `GET /api/v1/telemetry | range:15m | node:us-east-1`, label: 'TELEMETRY_PULL' },
+      { action: `PUT /admin/config | key:rate_limit | val:150req/m`, label: 'CONFIG_CHANGE' },
+      { action: `DELETE /api/v1/sessions?expired=true | count:12`, label: 'SESSION_CLEANUP' }
+    ];
+    const chosen = activities[Math.floor(Math.random() * activities.length)];
+    
+    const newOperators = [...operators];
+    newOperators[opIdx] = { ...randomOp, lastAction: chosen.label };
+    
+    set({ activeOperators: newOperators });
+    get().addLog(`[OP:${randomOp.name}] ${chosen.action} | status:200`, 'neutral');
+  }
 }));

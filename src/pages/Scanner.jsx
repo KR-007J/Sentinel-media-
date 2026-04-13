@@ -149,7 +149,7 @@ export default function Scanner() {
       
       if (savedThreat) {
         addThreat(savedThreat);
-        addLog(`AUDIT COMPLETE: ${targetName} processed with ${analysis?.label} rating.`, 'success');
+        addLog(`[SCAN] COMPLETE | target:${targetName} | verdict:${analysis?.label || 'CLEAN'} | risk:${analysis?.score || 0}% | engine:NEURAL_v3`, 'success');
       }
 
       finishScan(processedAiResult);

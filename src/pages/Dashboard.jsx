@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
+import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, Radio, Activity, Globe2, 
@@ -26,8 +27,17 @@ export default function Dashboard() {
     stopSimulation,
     triggerSimulation,
     resolveThreat,
-    applyDefense
+    applyDefense,
+    isLockdownActive,
+    toggleLockdown,
+    activeOperators,
+    simulateOperatorActivity,
+    isRoleTransitioning
   } = useStore();
+
+  const roleColor = role === 'ADMIN' ? 'text-red-500' : role === 'ANALYST' ? 'text-blue-500' : 'text-gray-400';
+  const roleBorder = role === 'ADMIN' ? 'border-red-500/40' : role === 'ANALYST' ? 'border-blue-500/40' : 'border-gray-500/40';
+  const roleBg = role === 'ADMIN' ? 'bg-red-500/10' : role === 'ANALYST' ? 'bg-blue-500/10' : 'bg-gray-500/10';
 
   const statusColors = {
     'SECURE': 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5',
@@ -92,12 +102,22 @@ export default function Dashboard() {
     return () => clearInterval(metricInterval);
   }, []);
 
+  // Periodic operator activity simulation
+  useEffect(() => {
+    const activityInterval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        simulateOperatorActivity();
+      }
+    }, 8000);
+    return () => clearInterval(activityInterval);
+  }, [simulateOperatorActivity]);
+
   const handleExplain = async (threat) => {
     if (explainingId === threat.id && explanation) return;
     setExplainingId(threat.id);
     setExplanation(null);
     try {
-      const respObj = await getThreatExplanation(threat);
+      const respObj = await getThreatExplanation(threat, role);
       setExplanation(respObj);
     } catch (e) {
       setExplanation({
@@ -112,6 +132,33 @@ export default function Dashboard() {
   return (
     <div className={`space-y-8 pb-12 min-h-screen transition-colors duration-1000 ${isSimulationActive ? 'animate-critical' : ''}`}>
       {isSimulationActive && <div className="scanner-line" />}
+
+      {/* ROLE TRANSITION OVERLAY */}
+      <AnimatePresence>
+        {isRoleTransitioning && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="role-transition-overlay"
+          >
+            <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-6" />
+            <span className="text-[11px] text-cyan-400 font-black uppercase tracking-[0.4em] mb-4">[ACCESS CONTROL ENGINE]</span>
+            <div className="flex flex-col items-start gap-2 mt-2 font-mono">
+              <span className="text-[9px] text-cyan-500/80 uppercase tracking-widest animate-pulse">&rarr; Validating Operator Credentials...</span>
+              <span className="text-[9px] text-cyan-500/60 uppercase tracking-widest animate-pulse" style={{animationDelay:'200ms'}}>&rarr; Synchronizing Permission Matrix...</span>
+              <span className="text-[9px] text-yellow-500 uppercase tracking-widest animate-pulse" style={{animationDelay:'400ms'}}>&rarr; Applying Role Override...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* SIMULATION MODE BANNER (Dashboard) */}
+      <div className="w-full py-1.5 bg-yellow-500/5 border border-yellow-500/15 rounded-sm flex items-center justify-center gap-3">
+        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 blink-slow" />
+        <span className="text-[8px] text-yellow-500 font-black uppercase tracking-[0.25em] blink-slow">SIMULATION MODE: ROLE OVERRIDE ENABLED</span>
+        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 blink-slow" />
+      </div>
       
       {/* SOC HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -140,48 +187,98 @@ export default function Dashboard() {
             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">
               Protecting: <span className="text-cyan-500">{protectedSystem}</span>
             </p>
-            <div className="flex items-center gap-2 pt-2">
-              <span className={`px-2 py-0.5 rounded text-[8px] font-black tracking-widest border ${
-                role === 'ADMIN' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 
-                role === 'ANALYST' ? 'bg-purple-500/10 border-purple-500 text-purple-400' : 
-                'bg-slate-800 border-slate-700 text-slate-500'
-              }`}>
-                {role} ACCESS
-              </span>
+            <div className="flex items-center gap-2 pt-2 flex-wrap">
+              {/* OPERATOR + ACCESS LEVEL */}
+              <div className={`flex items-center gap-2 px-2.5 py-1 rounded border ${roleBorder} ${roleBg}`}>
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Operator:</span>
+                <span className="text-[8px] font-black text-white uppercase tracking-widest">{user?.name || 'UNKNOWN'}</span>
+                <span className="text-[6px] text-slate-600">â”‚</span>
+                <span className="text-[8px] font-black uppercase tracking-widest">Access Level:</span>
+                <span className={`text-[8px] font-black uppercase tracking-widest ${roleColor}`}>{role}</span>
+              </div>
               {role === 'ADMIN' && (
                 <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 border border-red-500/40 rounded text-[8px] font-black text-red-500 tracking-widest animate-pulse">
-                  <Lock size={8} /> ADMIN MODE ACTIVE
+                  <Lock size={8} /> ADMIN OVERRIDE ACTIVE
                 </div>
               )}
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800 p-1.5 rounded-xl">
+        <div className="flex items-center gap-4 bg-slate-900/60 border border-slate-800 p-1.5 rounded-xl">
+          <button 
+            onClick={toggleLockdown}
+            disabled={!checkPermission('APPLY_DEFENSE') || isRoleTransitioning}
+            title={!checkPermission('APPLY_DEFENSE') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : "Toggle system lockdown"}
+            className={clsx(
+              "tech-button !py-2 !px-4 flex items-center gap-2 transition-all duration-500",
+              isLockdownActive 
+              ? "bg-red-500 text-slate-950 border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)]" 
+              : "bg-slate-800 text-red-500 border-red-500/30 hover:bg-red-500/10",
+              (!checkPermission('APPLY_DEFENSE') || isRoleTransitioning) && "!opacity-30 !grayscale cursor-not-allowed"
+            )}
+          >
+             <Lock size={14} className={isLockdownActive ? "animate-pulse" : ""} />
+             {isLockdownActive ? "SYSTEM_LOCKED" : "ENGAGE_LOCKDOWN"}
+          </button>
+
+          <div className="h-4 w-px bg-white/5 mx-2" />
+
           {isSimulationActive ? (
             <button 
               onClick={stopSimulation}
-              disabled={!checkPermission('MANAGE_SIMULATION')}
-              className="tech-button border-red-500/50 hover:bg-red-500/10 text-red-500 !py-2 !px-4 disabled:opacity-30 disabled:grayscale"
+              disabled={!checkPermission('MANAGE_SIMULATION') || isRoleTransitioning}
+              title={!checkPermission('MANAGE_SIMULATION') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : "Stop active simulation"}
+              className="tech-button border-red-500/50 hover:bg-red-500/10 text-red-500 !py-2 !px-4 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
             >
               <Square size={14} className="mr-2" /> STOP SIMULATION
             </button>
           ) : (
-            <>
-              {Object.keys(ATTACK_PROFILES).map(key => (
+            <div className="flex gap-2">
+              {Object.keys(ATTACK_PROFILES).slice(0, 3).map(key => (
                 <button 
                   key={key}
                   onClick={() => triggerSimulation(key)}
-                  disabled={!checkPermission('MANAGE_SIMULATION')}
-                  className="px-4 py-2 bg-slate-800/80 hover:bg-cyan-500 hover:text-slate-950 rounded-lg text-[10px] font-black tracking-widest transition-all uppercase disabled:opacity-30 disabled:hover:bg-slate-800 disabled:hover:text-slate-500"
+                  disabled={!checkPermission('MANAGE_SIMULATION') || isRoleTransitioning}
+                  title={!checkPermission('MANAGE_SIMULATION') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : `Trigger ${key} simulation`}
+                  className="px-4 py-2 bg-slate-800/80 hover:bg-cyan-500 hover:text-slate-950 rounded-lg text-[10px] font-black tracking-widest transition-all uppercase disabled:opacity-30 disabled:hover:bg-slate-800 disabled:hover:text-slate-500 disabled:cursor-not-allowed"
                 >
                   {key.split('_')[0]}
                 </button>
               ))}
-            </>
+            </div>
           )}
         </div>
       </div>
+
+      {isLockdownActive && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-600/20 border border-red-600 p-3 rounded-xl flex items-center justify-between shadow-[0_0_50px_rgba(220,38,38,0.2)]"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
+              <ShieldAlert className="text-white" size={24} />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-white tracking-widest uppercase">ADMIN OVERRIDE ACTIVE - SYSTEM LOCKDOWN</h3>
+              <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">All non-essential services suspended. External traffic throttled by 95%.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-6 px-4">
+            <div className="text-right">
+              <p className="text-[8px] text-slate-500 font-black uppercase">Authorized By</p>
+              <p className="text-[10px] text-white font-black uppercase tracking-tighter">{user?.name}</p>
+            </div>
+            <div className="h-8 w-px bg-white/10" />
+            <div className="text-right">
+              <p className="text-[8px] text-slate-500 font-black uppercase">Lockdown Level</p>
+              <p className="text-[10px] text-red-500 font-black uppercase tracking-tighter">MAXIMUM_PARANOIA</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* TIER 1: GLOBAL SITUATIONAL AWARENESS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -356,11 +453,17 @@ export default function Dashboard() {
                 >
                   System Logs ({systemLogs.length})
                 </button>
+                <button 
+                  onClick={() => setSidebarTab('operators')}
+                  className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded transition-all ${sidebarTab === 'operators' ? 'bg-cyan-500 text-slate-900 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-400'}`}
+                >
+                  Operators ({activeOperators.length})
+                </button>
               </div>
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-black/20">
-              {sidebarTab === 'threats' ? (
+              {sidebarTab === 'threats' && (
                 threats.length > 0 ? (
                   threats.map((threat, idx) => (
                     <motion.div 
@@ -396,7 +499,9 @@ export default function Dashboard() {
                         </button>
                         <button 
                           onClick={() => resolveThreat(threat.id)}
-                          className="text-[9px] font-black text-emerald-400 uppercase tracking-widest hover:underline flex items-center gap-1"
+                          disabled={!checkPermission('RESOLVE_THREAT') || isRoleTransitioning}
+                          title={!checkPermission('RESOLVE_THREAT') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : "Secure this node"}
+                          className="text-[9px] font-black text-emerald-400 uppercase tracking-widest hover:underline flex items-center gap-1 disabled:opacity-30 disabled:grayscale disabled:hover:no-underline disabled:cursor-not-allowed"
                         >
                           <ShieldCheck size={10} /> Secure Node
                         </button>
@@ -409,7 +514,9 @@ export default function Dashboard() {
                     <span className="text-[8px] font-mono uppercase tracking-[0.2em]">Zero Threats detected</span>
                   </div>
                 )
-              ) : (
+              )}
+
+              {sidebarTab === 'logs' && (
                 systemLogs.map((log, idx) => (
                   <motion.div 
                     initial={{ opacity: 0, x: 10 }}
@@ -418,13 +525,48 @@ export default function Dashboard() {
                     className="flex gap-4 text-[10px] font-mono border-b border-white/5 pb-2 last:border-0"
                   >
                     <span className="text-slate-600 shrink-0">[{new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}]</span>
-                    <span className={`${
+                    <span className={clsx(
                       log.type === 'alert' ? 'text-red-500' :
                       log.type === 'success' ? 'text-emerald-500' :
                       'text-cyan-500/70'
-                    }`}>
+                    )}>
                       {log.message}
                     </span>
+                  </motion.div>
+                ))
+              )}
+
+              {sidebarTab === 'operators' && (
+                activeOperators.map((op, idx) => (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    key={op.id}
+                    className="p-3 bg-slate-900/60 border border-slate-800 rounded flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={clsx(
+                        "w-2 h-2 rounded-full",
+                        op.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-blue-500'
+                      )} />
+                      <div>
+                        <p className="text-[10px] font-black text-white">{op.name}</p>
+                        <p className={clsx(
+                          "text-[7px] uppercase tracking-widest",
+                          op.role === 'ADMIN' && "text-red-500",
+                          op.role === 'ANALYST' && "text-blue-500",
+                          op.role === 'VIEWER' && "text-gray-400"
+                        )}>{op.role}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-[7px] font-mono text-cyan-500/60 px-2 py-0.5 border border-cyan-500/20 rounded">
+                        {op.status}
+                      </span>
+                      <span className="text-[6px] font-mono text-slate-500 max-w-[100px] truncate">
+                        {op.lastAction}
+                      </span>
+                    </div>
                   </motion.div>
                 ))
               )}
@@ -443,12 +585,13 @@ export default function Dashboard() {
             <div className="p-4 grid grid-cols-2 gap-2">
               <button 
                 onClick={() => applyDefense('FIREWALL')}
-                disabled={!checkPermission('APPLY_DEFENSE')}
+                disabled={!checkPermission('APPLY_DEFENSE') || isRoleTransitioning}
+                title={!checkPermission('APPLY_DEFENSE') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : "Toggle Firewall"}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('FIREWALL') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                } disabled:opacity-30 disabled:grayscale`}
+                } disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed`}
               >
                 <Lock size={14} className={`${activeDefenses.includes('FIREWALL') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Enable Firewall</span>
@@ -457,12 +600,13 @@ export default function Dashboard() {
               
               <button 
                 onClick={() => applyDefense('2FA')}
-                disabled={!checkPermission('APPLY_DEFENSE')}
+                disabled={!checkPermission('APPLY_DEFENSE') || isRoleTransitioning}
+                title={!checkPermission('APPLY_DEFENSE') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : "Toggle 2FA"}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('2FA') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                } disabled:opacity-30 disabled:grayscale`}
+                } disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed`}
               >
                 <Radio size={14} className={`${activeDefenses.includes('2FA') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Enforce 2FA</span>
@@ -471,12 +615,13 @@ export default function Dashboard() {
 
               <button 
                 onClick={() => applyDefense('BLOCK_IP')}
-                disabled={!checkPermission('APPLY_DEFENSE')}
+                disabled={!checkPermission('APPLY_DEFENSE') || isRoleTransitioning}
+                title={!checkPermission('APPLY_DEFENSE') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : "Toggle IP Blocking"}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('BLOCK_IP') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                } disabled:opacity-30 disabled:grayscale`}
+                } disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed`}
               >
                 <ShieldAlert size={14} className={`${activeDefenses.includes('BLOCK_IP') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Block Identity</span>
@@ -485,12 +630,13 @@ export default function Dashboard() {
 
               <button 
                 onClick={() => applyDefense('RATE_LIMIT')}
-                disabled={!checkPermission('APPLY_DEFENSE')}
+                disabled={!checkPermission('APPLY_DEFENSE') || isRoleTransitioning}
+                title={!checkPermission('APPLY_DEFENSE') ? "Requires ADMIN privileges" : isRoleTransitioning ? "Role transition in progress" : "Toggle Rate Limiting"}
                 className={`p-3 border rounded transition-all text-left group ${
                   activeDefenses.includes('RATE_LIMIT') 
                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]' 
                   : 'border-white/5 bg-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10'
-                } disabled:opacity-30 disabled:grayscale`}
+                } disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed`}
               >
                 <Activity size={14} className={`${activeDefenses.includes('RATE_LIMIT') ? 'text-slate-900' : 'text-cyan-400'} mb-2 group-hover:scale-110 transition-transform`} />
                 <span className="block text-[10px] font-black uppercase tracking-tighter">Rate Limiting</span>

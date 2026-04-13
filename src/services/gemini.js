@@ -45,9 +45,16 @@ export async function callGemini(prompt) {
 /**
  * Provides a technical XAI explanation for a threat.
  */
-export async function getThreatExplanation(threat) {
-  const prompt = `
-    ACT AS A SENIOR CYBERSECURITY ARCHITECT.
+export async function getThreatExplanation(threat, role) {
+    const roleTone = {
+      'ADMIN': 'ACT AS A SENIOR CYBERSECURITY ARCHITECT. Provide deep technical forensics, raw packet-level assumptions, and infrastructure-wide impact analysis.',
+      'ANALYST': 'ACT AS A TACTICAL SOC ANALYST. Focus on immediate mitigation steps, threat actor profiling, and specific CVE/vulnerability classification.',
+      'VIEWER': 'ACT AS A CYBERSECURITY EXECUTIVE. Focus on business risk, potential compliance impact, and high-level summaries for non-technical stakeholders.'
+    };
+
+    const prompt = `
+    ${roleTone[role] || roleTone['ANALYST']}
+    
     ANALYZE THIS THREAT EVENT IDENTIFIED BY SENTINEL-ZERO:
     ---
     URL/TARGET: ${threat.url || threat.target}
@@ -62,7 +69,7 @@ export async function getThreatExplanation(threat) {
        "threatType": "Short classification of the threat (e.g. Brute Force)",
        "reason": "Technical reason why this was flagged (mention Zero Trust rules) in 1-2 sentences. Human-readable.",
        "confidence": "Percentage like '98%'",
-       "fix": "Step-by-step technical instructions for mitigation. Bullet points string."
+       "fix": "Step-by-step instructions for mitigation. Tailor tone to the role."
     }
     KEEP IT PROFESSIONAL, TACTICAL, AND CONCISE.
   `;

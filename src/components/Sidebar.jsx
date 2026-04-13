@@ -1,4 +1,5 @@
 import React from 'react';
+import clsx from 'clsx';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,7 +7,6 @@ import {
   FileText, Settings, ChevronLeft, Shield, LogOut
 } from 'lucide-react';
 import { useStore } from '../hooks/useStore';
-import clsx from 'clsx';
 
 
 const NAV = [
@@ -19,7 +19,7 @@ const NAV = [
 ];
 
 export default function Sidebar() {
-  const { sidebarOpen, toggleSidebar, threats, logout, user, role } = useStore();
+  const { sidebarOpen, toggleSidebar, threats, logout, user, role, setRole, isRoleTransitioning } = useStore();
   const highThreats = threats.filter(t => (t.severity || '').toUpperCase() === 'CRITICAL').length;
 
   return (
@@ -28,8 +28,13 @@ export default function Sidebar() {
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
       className="h-full flex flex-col flex-shrink-0 bg-black/40 backdrop-blur-2xl border-r border-white/10 relative z-[50]"
     >
+      {/* SIMULATION BANNER */}
+      <div className="w-full bg-yellow-500/10 border-b border-yellow-500/20 py-1.5 px-3 flex items-center justify-center">
+        <span className="text-[7px] text-yellow-500 font-black uppercase tracking-[0.2em] blink-slow">SIMULATION MODE: ROLE OVERRIDE ENABLED</span>
+      </div>
+
       {/* HUD Header */}
-      <div className="flex items-center gap-3 px-5 py-6 border-b border-white/10">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 relative bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
           <Shield size={20} className="text-cyan-400" />
           {highThreats > 0 && (
@@ -99,10 +104,15 @@ export default function Sidebar() {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl"
+              className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg overflow-hidden border border-cyan-500/30">
+                <div className={clsx(
+                  "w-10 h-10 rounded-lg overflow-hidden border",
+                  role === 'ADMIN' ? "border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.3)]" :
+                  role === 'ANALYST' ? "border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.3)]" :
+                  "border-slate-500/50"
+                )}>
                   {user.photoURL ? (
                     <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
                   ) : (
@@ -113,14 +123,63 @@ export default function Sidebar() {
                 </div>
                 <div className="overflow-hidden">
                   <p className="text-[10px] font-black text-white truncate uppercase tracking-tighter">{user.name}</p>
-                  <p className={`text-[8px] font-black uppercase tracking-widest ${
-                    role === 'ADMIN' ? 'text-cyan-400' : 
-                    role === 'ANALYST' ? 'text-purple-400' : 
+                  <p className={clsx(
+                    "text-[8px] font-black uppercase tracking-[0.2em]",
+                    role === 'ADMIN' ? 'text-red-500' : 
+                    role === 'ANALYST' ? 'text-blue-500' : 
                     'text-slate-500'
-                  }`}>
-                    {role} Level
+                  )}>
+                    {role} AUTHORITY
                   </p>
                 </div>
+              </div>
+
+              {/* Session Intelligence Dashboard */}
+              <div className="pt-3 border-t border-white/5 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[7px] text-slate-500 font-black uppercase tracking-widest">METHOD</span>
+                  <span className="text-[7px] text-cyan-400 font-black uppercase tracking-widest">{useStore.getState().sessionInfo.authMethod}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[7px] text-slate-500 font-black uppercase tracking-widest">SESSION RISK</span>
+                  <span className={clsx(
+                    "text-[7px] font-black uppercase tracking-widest px-1 rounded-sm",
+                    useStore.getState().sessionInfo.sessionRisk === 'LOW' ? 'text-emerald-400' : 'text-red-400'
+                  )}>
+                    {useStore.getState().sessionInfo.sessionRisk}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[7px] text-slate-500 font-black uppercase tracking-widest">TRUST LVL</span>
+                  <span className="text-[7px] text-purple-400 font-black uppercase tracking-widest">{useStore.getState().sessionInfo.deviceTrust}</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="p-4 bg-white/5 mx-3 mb-4 rounded-sm border border-white/5 overflow-hidden">
+              <div className="text-[10px] font-black uppercase text-text-secondary/50 mb-2 tracking-widest">Op Override</div>
+              <div className="flex flex-col gap-1.5">
+                {['ADMIN', 'ANALYST', 'VIEWER'].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRole(r)}
+                    disabled={isRoleTransitioning}
+                    title={isRoleTransitioning ? "Reconfiguring Access Control..." : `Apply ${r} Override`}
+                    className={clsx(
+                      "text-left px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all border",
+                      isRoleTransitioning ? "opacity-50 cursor-not-allowed grayscale" : "active:scale-95",
+                      role === r 
+                        ? (r === 'ADMIN' ? 'bg-red-500/20 text-red-500 border-red-500/50' : r === 'ANALYST' ? 'bg-blue-500/20 text-blue-500 border-blue-500/50' : 'bg-gray-500/20 text-gray-300 border-gray-500/50')
+                        : "bg-black/50 text-white/40 border-transparent hover:bg-white/5 hover:text-white"
+                    )}
+                  >
+                    {isRoleTransitioning && role !== r ? 'WAIT...' : r + ' ACCESS'}
+                  </button>
+                ))}
               </div>
             </motion.div>
           )}

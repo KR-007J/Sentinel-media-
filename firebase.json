@@ -12,5 +12,18 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Sentinel Zero",
+        "supportEmail": "krishjoshi007j@gmail.com",
+        "authorizedRedirectUris": [
+          "http://localhost:3000",
+          "https://sentinel-zero-v3.web.app"
+        ]
+      }
+    }
   }
 }
