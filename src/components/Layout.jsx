@@ -1,17 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import ThreeBackground from './ThreeBackground';
+import AskSentinel from './AskSentinel';
 import { useStore } from '../hooks/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Layout({ children }) {
-  const sidebarOpen = useStore(s => s.sidebarOpen);
+  const { sidebarOpen, isSimulationActive, globalRiskScore } = useStore();
   const location = useLocation();
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden text-slate-100 font-tech selection:bg-primary/30">
+    <div className={`flex h-screen overflow-hidden text-slate-100 font-tech selection:bg-primary/30 transition-colors duration-1000 ${isSimulationActive ? 'bg-red-950/20' : 'bg-black'}`}>
+      
+      {/* Simulation Attack Overlay */}
+      {isSimulationActive && (
+        <div className="fixed inset-0 pointer-events-none z-[50] mix-blend-overlay opacity-30 animate-pulse bg-red-600/20 shadow-[inset_0_0_100px_rgba(220,38,38,0.5)]" />
+      )}
+
       {/* Background Layers */}
       <div className="live-wallpaper" />
       <div className="scanline-overlay" />
@@ -21,7 +28,7 @@ export default function Layout({ children }) {
 
       {/* Holographic scanning overlay */}
       <div className="fixed inset-0 pointer-events-none z-[1] opacity-10">
-        <div className="w-full h-[150px] bg-gradient-to-b from-primary/0 via-primary/10 to-primary/0 absolute top-0 left-0 animate-[scan_12s_linear_infinite]" />
+        <div className={`w-full h-[150px] absolute top-0 left-0 animate-[scan_12s_linear_infinite] bg-gradient-to-b from-transparent ${isSimulationActive ? 'via-red-500/20' : 'via-primary/10'} to-transparent`} />
       </div>
 
       <div className="flex flex-1 w-full relative z-[10]">
@@ -47,6 +54,8 @@ export default function Layout({ children }) {
           </main>
         </div>
       </div>
+
+      <AskSentinel />
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scan {

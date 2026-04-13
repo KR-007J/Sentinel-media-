@@ -35,6 +35,26 @@ export const ATTACK_PROFILES = {
       isNewDevice: false,
       geoMismatch: true
     }
+  },
+  SQL_INJECTION: {
+    name: "SQL Injection Payload",
+    description: "Malicious DROP TABLE and UNION SELECT payloads detected in database mutation endpoints.",
+    telemetry: {
+      requestFrequency: 5,
+      mfaEnabled: true,
+      isNewDevice: true,
+      geoMismatch: false
+    }
+  },
+  XSS_PAYLOAD: {
+    name: "Cross-Site Scripting (XSS)",
+    description: "Execution of <script> and alert() vectors intercepted at ingress gateway.",
+    telemetry: {
+      requestFrequency: 2,
+      mfaEnabled: false,
+      isNewDevice: true,
+      geoMismatch: true
+    }
   }
 };
 

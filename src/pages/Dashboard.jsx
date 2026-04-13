@@ -25,7 +25,7 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState({ cpu: 42, network: 120, memory: 68 });
   const [slideIndex, setSlideIndex] = useState(0);
   const [explainingId, setExplainingId] = useState(null);
-  const [explanation, setExplanation] = useState('');
+  const [explanation, setExplanation] = useState(null);
 
   // Auto-scroll critical alerts
   const criticalThreats = threats.filter(t => t.severity === 'CRITICAL' || t.severity === 'Critical' || t.severity === 'High');
@@ -53,12 +53,17 @@ export default function Dashboard() {
 
   const handleExplain = async (threat) => {
     setExplainingId(threat.id);
-    setExplanation('... NEURAL CORE ANALYZING PAYLOAD ...');
+    setExplanation(null);
     try {
-      const reason = await getThreatExplanation(threat);
-      setExplanation(reason);
+      const respObj = await getThreatExplanation(threat);
+      setExplanation(respObj);
     } catch (e) {
-      setExplanation('FAILED TO REACH AI CLUSTER. LOCAL HEURISTICS SUGGEST ABNORMAL VELOCITY.');
+      setExplanation({
+        threatType: "Local Heuristics Fallback",
+        reason: "FAILED TO REACH AI CLUSTER. LOCAL HEURISTICS SUGGEST ABNORMAL VELOCITY.",
+        confidence: "??%",
+        fix: "- Disconnect immediately\n- Verify API keys"
+      });
     }
   };
 
@@ -293,19 +298,44 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Zap size={16} className="text-yellow-400" />
-                    <h4 className="text-xs font-black font-tech uppercase tracking-widest text-yellow-400">Neural Interpretation</h4>
+                    <h4 className="text-xs font-black font-tech uppercase tracking-widest text-yellow-400">Explainable AI</h4>
                   </div>
                   <button onClick={() => setExplainingId(null)} className="text-slate-500 hover:text-white">
                     <Square size={12} />
                   </button>
                 </div>
-                <div className="font-mono text-[11px] leading-relaxed text-slate-300">
-                  <div className="flex gap-2 mb-2 text-cyan-400/60 uppercase text-[9px]">
-                    <span>Analysis PID: {explainingId.slice(0, 10)}</span>
-                    <span>Confidence: 0.992</span>
+                
+                {!explanation ? (
+                  <div className="font-mono text-xs leading-relaxed text-yellow-500/80 uppercase animate-pulse">
+                    ... Neural Core Analyzing Payload ...
                   </div>
-                  {explanation}
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[10px] font-mono text-cyan-400/60 uppercase">Threat Classification</span>
+                        <h5 className="text-sm font-bold text-slate-100 uppercase tracking-tight">{explanation.threatType}</h5>
+                      </div>
+                      <div className="text-[10px] font-mono text-yellow-400 uppercase border border-yellow-500/30 px-2 py-0.5 rounded-sm bg-yellow-500/10">
+                        CONFIDENCE: {explanation.confidence}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <span className="text-[10px] font-mono text-cyan-400/60 uppercase block mb-1">Reason Detected</span>
+                      <p className="text-xs text-slate-300 leading-relaxed italic border-l-2 border-slate-700 pl-3">
+                        {explanation.reason}
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-mono text-cyan-400/60 uppercase block mb-1">Recommended Fix</span>
+                      <div className="text-xs text-slate-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/20 p-3 rounded-sm border border-white/5">
+                        {explanation.fix}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

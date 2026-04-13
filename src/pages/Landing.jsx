@@ -54,31 +54,36 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-slate-800 bg-slate-900/60 backdrop-blur-xl text-[10px] font-black uppercase tracking-[0.4em] font-tech text-cyan-400">
             <Radar size={14} className="animate-spin-slow text-cyan-500" />
-            Sentinel Network Protection v3.0 // Tactical
+            Sentinel Zero | Y-Combinator W26 Finalist
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}
             className="text-7xl md:text-9xl font-black tracking-tight leading-[0.85] text-white uppercase font-tech">
-            SECURE YOUR <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-500">DIGITAL LEGACY</span>
+            THE ZERO TRUST<br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-500">OPERATING SYSTEM</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="text-slate-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-semibold italic">
-            The enterprise-grade AI security console for global sports media. Monitor, detect, and enforce copyright integrity with millisecond precision.
+            AI-powered security for modern developers and scaling applications. We monitor, detect, and mitigate brute-force and scraping attacks with predictive global telemetry.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
             <button onClick={() => navigate('/login')}
               className="group relative px-12 py-6 bg-cyan-500 text-slate-950 font-black text-[11px] uppercase tracking-[0.3em] rounded-2xl overflow-hidden active:scale-95 transition-all shadow-[0_0_40px_rgba(6,182,212,0.3)] hover:shadow-cyan-500/50">
-              <span className="relative z-10 flex items-center gap-3">Initialize Tactical Command <ArrowRight size={18} /></span>
+              <span className="relative z-10 flex items-center gap-3">Install Sentinel Free <ArrowRight size={18} /></span>
               <motion.div animate={{ x: ['-100%', '100%'] }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                 className="absolute inset-0 bg-white/20 skew-x-12 translate-x-[-100%]" />
             </button>
             <button 
-              onClick={() => setShowBrief(true)}
-              className="px-12 py-6 bg-slate-900/40 border border-slate-800 text-white font-black text-[11px] uppercase tracking-[0.3em] rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 active:scale-95 group">
-              <Play size={18} className="text-purple-400 group-hover:scale-110 transition-transform" fill="currentColor" /> System Briefing
+              onClick={() => {
+                // Instantly navigate to demo mode dashboard
+                localStorage.setItem('sentinel_auth', 'true');
+                localStorage.setItem('sentinel_user', JSON.stringify({ name: 'Guest Developer', role: 'admin' }));
+                navigate('/dashboard');
+              }}
+              className="px-12 py-6 bg-red-500/10 border border-red-500/50 text-red-400 font-black text-[11px] uppercase tracking-[0.3em] rounded-2xl hover:bg-red-500/20 transition-all flex items-center gap-3 active:scale-95 group">
+              <Shield size={18} className="text-red-400 group-hover:scale-110 transition-transform animate-pulse" /> Simulate Attack Demo
             </button>
           </motion.div>
 

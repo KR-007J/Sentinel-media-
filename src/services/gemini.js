@@ -7,7 +7,7 @@ const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL
 /**
  * Generic Fetcher with Fallback and Logging
  */
-async function callGemini(prompt) {
+export async function callGemini(prompt) {
   if (!API_KEY || API_KEY === 'undefined') {
     console.error('Gemini API Key missing');
     return null;
@@ -50,21 +50,36 @@ export async function getThreatExplanation(threat) {
     ACT AS A SENIOR CYBERSECURITY ARCHITECT.
     ANALYZE THIS THREAT EVENT IDENTIFIED BY SENTINEL-ZERO:
     ---
-    URL: ${threat.url}
+    URL/TARGET: ${threat.url || threat.target}
     PLATFORM: ${threat.platform}
     REASON: ${threat.reason}
     SEVERITY: ${threat.severity || 'Medium'}
     RISK SCORE: ${threat.risk_score || 50}
     ---
-    PROVIDE A STRUCTURED ANALYSIS IN THE FOLLOWING FORMAT:
-    1. SUMMARY: A 2-sentence executive overview.
-    2. TECHNICAL ANALYSIS: Details on why this was flagged (mention Zero Trust rules).
-    3. REMEDIATION: Step-by-step technical instructions for mitigation.
-    
+    PROVIDE A STRUCTURED JSON ANALYSIS. DO NOT PROPOSE ANY MARKDOWN BLOCK. JUST PURE JSON.
+    FORMAT:
+    {
+       "threatType": "Short classification of the threat (e.g. Brute Force)",
+       "reason": "Technical reason why this was flagged (mention Zero Trust rules) in 1-2 sentences. Human-readable.",
+       "confidence": "Percentage like '98%'",
+       "fix": "Step-by-step technical instructions for mitigation. Bullet points string."
+    }
     KEEP IT PROFESSIONAL, TACTICAL, AND CONCISE.
   `;
   
-  return await callGemini(prompt);
+  const res = await callGemini(prompt);
+  try {
+    const cleaned = res.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.error("Failed to parse getThreatExplanation", e);
+    return {
+      threatType: "Unknown Threat Vector",
+      reason: "FAILED TO REACH AI CLUSTER. LOCAL HEURISTICS SUGGEST ABNORMAL VELOCITY.",
+      confidence: "??%",
+      fix: "- Sever connection immediately\n- Review ingress logs\n- Manually rotate API keys"
+    };
+  }
 }
 
 /**
