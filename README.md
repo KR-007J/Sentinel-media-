@@ -24,7 +24,7 @@
 ---
 
 <hr />
-
+https://sentinel-zero-cafe7.web.app/
 ## 📖 Executive Summary
 **Sentinel-Zero** is a sophisticated, high-authority AI-OS engineered for enterprise-tier asset protection and threat intelligence. Moving beyond standard dashboards, it implements a **Deterministic Role-Based Access Control (RBAC)** system with cinematic state transitions, simulating a high-security operational environment. Powered by **Gemini 1.5 Flash** and a multi-layered cloud backbone, it provides sub-second detection and automated forensic compilation.
 
